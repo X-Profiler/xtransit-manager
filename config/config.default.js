@@ -12,15 +12,41 @@ module.exports = appInfo => {
    **/
   const config = exports = {};
 
-  // use for cookie sign key, should change to your own and keep security
   config.keys = appInfo.name + '_1589386223046_7287';
 
-  // add your middleware config here
   config.middleware = [];
 
-  // add your user config here
-  const userConfig = {
-    // myAppName: 'egg',
+  config.security = {
+    csrf: {
+      ignore: ['/xtransit'],
+    },
+  };
+
+  const userConfig = {};
+
+  userConfig.mysql = {
+    app: true,
+    agent: false,
+    clients: {
+      xprofiler_console: {
+        host: '',
+        port: 3306,
+        user: '',
+        password: '',
+        database: 'xprofiler_console',
+      },
+      xprofiler_logs: {
+        host: '',
+        port: 3306,
+        user: '',
+        password: '',
+        database: 'xprofiler_logs',
+      },
+    },
+  };
+
+  userConfig.secure = {
+    secret: 'easy-monitor::xprofiler',
   };
 
   return {

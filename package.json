@@ -16,6 +16,7 @@
     "egg-bin": "^4.11.0",
     "egg-ci": "^1.11.0",
     "egg-mock": "^3.21.0",
+    "egg-mysql": "^3.0.0",
     "eslint": "^5.13.0",
     "eslint-config-egg": "^7.1.0"
   },
@@ -30,7 +31,7 @@
     "test": "npm run lint -- --fix && npm run test-local",
     "test-local": "egg-bin test",
     "cov": "egg-bin cov",
-    "lint": "eslint .",
+    "lint": "eslint app config test --fix",
     "ci": "npm run lint && npm run cov",
     "autod": "autod"
   },
