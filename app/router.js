@@ -13,6 +13,8 @@ module.exports = app => {
   } = app.middleware.params({}, app);
 
   router.post('/xtransit/app_secret', checkSign, checkParams(['appId']), 'xtransit.getAppSecret');
-  router.post('/xtransit/client_status', checkSign,
+  router.post('/xtransit/update_client', checkSign,
     checkParams(['appId', 'agentId', 'clientId', 'server', 'timestamp']), 'xtransit.updateClient');
+  router.post('/xtransit/remove_client', checkSign,
+    checkParams(['appId', 'agentId', 'clientId']), 'xtransit.removeClient');
 };

@@ -20,6 +20,15 @@ class XtransitController extends Controller {
 
     ctx.body = { ok: true };
   }
+
+  async removeClient() {
+    const { ctx, ctx: { service: { redis } } } = this;
+    const { appId, agentId, clientId } = ctx.request.body;
+
+    await redis.removeClient(appId, agentId, clientId);
+
+    ctx.body = { ok: true };
+  }
 }
 
 module.exports = XtransitController;

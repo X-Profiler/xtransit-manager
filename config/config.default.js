@@ -61,7 +61,7 @@ module.exports = appInfo => {
     secret: 'easy-monitor::xprofiler',
   };
 
-  userConfig.clientListPrefix = 'XTRANSIT_CLIENT::';
+  userConfig.clientsPrefix = 'XTRANSIT_CLIENT::';
 
   return {
     ...config,
