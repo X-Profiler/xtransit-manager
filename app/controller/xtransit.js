@@ -11,6 +11,15 @@ class XtransitController extends Controller {
 
     ctx.body = { ok: true, data: { secret } };
   }
+
+  async updateClient() {
+    const { ctx, ctx: { service: { redis } } } = this;
+    const { appId, agentId, clientId, server, timestamp } = ctx.request.body;
+
+    await redis.updateClient(appId, agentId, clientId, server, timestamp);
+
+    ctx.body = { ok: true };
+  }
 }
 
 module.exports = XtransitController;

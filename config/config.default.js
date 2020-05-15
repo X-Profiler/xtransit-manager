@@ -24,6 +24,7 @@ module.exports = appInfo => {
 
   const userConfig = {};
 
+  // mysql
   userConfig.mysql = {
     app: true,
     agent: false,
@@ -45,9 +46,22 @@ module.exports = appInfo => {
     },
   };
 
+  // redis
+  userConfig.redis = {
+    client: {
+      sentinels: null,
+      port: 6379,
+      host: '',
+      password: '',
+      db: 0,
+    },
+  };
+
   userConfig.secure = {
     secret: 'easy-monitor::xprofiler',
   };
+
+  userConfig.clientListPrefix = 'XTRANSIT_CLIENT::';
 
   return {
     ...config,
