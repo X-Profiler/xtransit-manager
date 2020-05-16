@@ -1,5 +1,6 @@
 'use strict';
 
+const pMap = require('p-map');
 const Service = require('egg').Service;
 
 class RedisService extends Service {
@@ -11,6 +12,32 @@ class RedisService extends Service {
 
   composeClientsField(agentId) {
     return agentId;
+  }
+
+  async cleanExpiredXtransit() {
+    const { ctx: { app: { redis, config: { appsKey } } } } = this;
+    const livingApps = await redis.smembers(appsKey);
+    await pMap(livingApps, async appId => {
+      const key = this.composeClientsKey(appId);
+
+      // clean expired agents
+      const agentIds = await redis.hgetall(key);
+      let length = 0;
+      await pMap(Object.entries(agentIds), async ([agentId, agentInfo]) => {
+        length++;
+        const { timestamp } = JSON.parse(agentInfo);
+        if (!timestamp || Date.now() - timestamp > 5 * 60 * 1000) {
+          const field = this.composeClientsField(agentId);
+          await redis.hdel(key, field);
+          length--;
+        }
+      }, { concurrency: 2 });
+
+      // check app is still living
+      if (length === 0) {
+        await redis.srem(appsKey, appId);
+      }
+    }, { concurrency: 2 });
   }
 
   async handleOldClients(appId, agentId, clientId) {
@@ -34,9 +61,20 @@ class RedisService extends Service {
     }
   }
 
+  async updateLivingApp(appId) {
+    const { ctx: { app: { redis, config: { appsKey } } } } = this;
+    await redis.sadd(appsKey, appId);
+  }
+
   async updateClient(appId, agentId, clientId, server, timestamp) {
     const { ctx: { app: { redis } } } = this;
+    // handle old client
     await this.handleOldClients(appId, agentId, clientId);
+
+    // add living app info
+    await this.updateLivingApp(appId);
+
+    // add client info
     const key = this.composeClientsKey(appId);
     const field = this.composeClientsField(agentId);
     const value = JSON.stringify({ clientId, server, timestamp });
@@ -55,7 +93,9 @@ class RedisService extends Service {
       return;
     }
     if (value.clientId === clientId) {
-      await redis.hdel(key, field);
+      const tasks = [];
+      tasks.push(redis.hdel(key, field));
+      await Promise.all(tasks);
     }
   }
 }
