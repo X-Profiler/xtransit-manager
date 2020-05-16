@@ -12,6 +12,10 @@ module.exports = app => {
     checkParams,
   } = app.middleware.params({}, app);
 
+  // xprofiler-console
+  router.post('/xprofiler/clients', checkSign, checkParams(['appId']), 'xprofiler.getClients');
+
+  // xtransit-server
   router.post('/xtransit/app_secret', checkSign, checkParams(['appId']), 'xtransit.getAppSecret');
   router.post('/xtransit/update_client', checkSign,
     checkParams(['appId', 'agentId', 'clientId', 'server', 'timestamp']), 'xtransit.updateClient');

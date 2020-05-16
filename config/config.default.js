@@ -18,7 +18,10 @@ module.exports = appInfo => {
 
   config.security = {
     csrf: {
-      ignore: ['/xtransit'],
+      ignore: [
+        '/xtransit',
+        '/xprofiler',
+      ],
     },
   };
 
@@ -61,11 +64,11 @@ module.exports = appInfo => {
     secret: 'easy-monitor::xprofiler',
   };
 
+  userConfig.httpTimeout = 15000;
+
   userConfig.appsKey = 'XTRANSIT_APP';
 
   userConfig.clientsPrefix = 'XTRANSIT_CLIENT::';
-
-  userConfig.httpTimeout = 15000;
 
   return {
     ...config,

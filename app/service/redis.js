@@ -98,6 +98,41 @@ class RedisService extends Service {
       await Promise.all(tasks);
     }
   }
+
+  async getClients(appId) {
+    const { ctx: { app: { redis }, service: { xtransit } } } = this;
+    const key = this.composeClientsKey(appId);
+    const agents = await redis.hgetall(key);
+    if (Object.keys(agents).length === 0) {
+      return;
+    }
+    const map = {};
+    for (const [agentId, agentInfo] of Object.entries(agents)) {
+      const { server, clientId } = JSON.parse(agentInfo);
+      const data = { appId, agentId, clientId };
+      if (map[server]) {
+        map[server].push(data);
+      } else {
+        map[server] = [data];
+      }
+    }
+    const livingClients = [];
+    await pMap(Object.entries(map), async ([server, clients]) => {
+      const data = await xtransit.checkClientAlive(server, { clients });
+      for (const [index, status] of Object.entries(data)) {
+        const clientInfo = clients[Number(index)];
+        if (status) {
+          livingClients.push(clientInfo);
+        } else {
+          const { agentId } = clientInfo;
+          const field = this.composeClientsField(agentId);
+          await redis.hdel(key, field);
+        }
+      }
+    }, { concurrency: 2 });
+
+    return livingClients;
+  }
 }
 
 module.exports = RedisService;
