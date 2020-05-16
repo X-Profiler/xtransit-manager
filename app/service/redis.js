@@ -99,6 +99,20 @@ class RedisService extends Service {
     }
   }
 
+  async getClient(appId, agentId) {
+    const { ctx, ctx: { app: { redis } } } = this;
+    const key = this.composeClientsKey(appId);
+    const field = this.composeClientsField(agentId);
+    let value = await redis.hget(key, field);
+    try {
+      value = JSON.parse(value);
+    } catch (err) {
+      ctx.logger.error(`[redis] [removeClient] falied: ${err}`);
+      value = {};
+    }
+    return value;
+  }
+
   async getClients(appId) {
     const { ctx: { app: { redis }, service: { xtransit } } } = this;
     const key = this.composeClientsKey(appId);

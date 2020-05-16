@@ -27,12 +27,27 @@ class XtransitService extends Service {
     }
   }
 
+  async execCommand(appId, agentId, command, defaultValue, expiredTime = 15 * 1000) {
+    const { ctx, ctx: { service: { redis } } } = this;
+    const { server, clientId } = await redis.getClient(appId, agentId);
+    if (!server) {
+      ctx.logger.error(`app ${appId} agent ${agentId} not connected!`);
+      return defaultValue;
+    }
+    const data = { appId, agentId, clientId, command, expiredTime };
+    return this.request(server, '/xapi/exec_command', data, defaultValue);
+  }
+
   closeClient(server, data) {
     return this.request(server, '/xapi/shutdown', data);
   }
 
   checkClientAlive(server, data) {
     return this.request(server, '/xapi/check_client_alive', data, {});
+  }
+
+  getAgentOsInfo(appId, agentId) {
+    return this.execCommand(appId, agentId, 'get_os_info', {});
   }
 }
 
