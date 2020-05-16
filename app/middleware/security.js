@@ -16,7 +16,7 @@ module.exports = config => {
         return ctx.authFailed(401, '需要签名');
       }
       delete data.signature;
-      if (sign(secret, JSON.stringify(data)) !== signature) {
+      if (sign(data, secret) !== signature) {
         return ctx.authFailed(401, '签名错误');
       }
       await next();

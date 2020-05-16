@@ -13,8 +13,30 @@ class RedisService extends Service {
     return agentId;
   }
 
+  async handleOldClients(appId, agentId, clientId) {
+    const { ctx, ctx: { app: { redis }, service: { xtransit } } } = this;
+    try {
+      const key = this.composeClientsKey(appId);
+      const field = this.composeClientsField(agentId);
+
+      // check old client
+      let oldClients = await redis.hget(key, field);
+      oldClients = JSON.parse(oldClients);
+
+      if (oldClients) {
+        const { clientId: oldClientId, server: oldClientServer } = oldClients;
+        if (oldClientId !== clientId) {
+          await xtransit.closeClient(oldClientServer, { appId, agentId, oldClientId });
+        }
+      }
+    } catch (err) {
+      ctx.logger.error(`[redis] [handleOldClients] falied: ${err}`);
+    }
+  }
+
   async updateClient(appId, agentId, clientId, server, timestamp) {
     const { ctx: { app: { redis } } } = this;
+    await this.handleOldClients(appId, agentId, clientId);
     const key = this.composeClientsKey(appId);
     const field = this.composeClientsField(agentId);
     const value = JSON.stringify({ clientId, server, timestamp });
