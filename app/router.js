@@ -15,6 +15,7 @@ module.exports = app => {
   // xprofiler-console
   router.post('/xprofiler/clients', checkSign, checkParams(['appId']), 'xprofiler.getClients');
   router.post('/xprofiler/agent_osinfo', checkSign, checkParams(['appId', 'agentId']), 'xprofiler.getAgentOsInfo');
+  router.post('/xprofiler/agent_node_processes', checkSign, checkParams(['appId', 'agentId']), 'xprofiler.getAgentNodeProcesses');
 
   // xtransit-server
   router.post('/xtransit/app_secret', checkSign, checkParams(['appId']), 'xtransit.getAppSecret');

@@ -108,9 +108,8 @@ class RedisService extends Service {
       value = JSON.parse(value);
     } catch (err) {
       ctx.logger.error(`[redis] [removeClient] falied: ${err}`);
-      value = {};
     }
-    return value;
+    return value || {};
   }
 
   async getClients(appId) {
