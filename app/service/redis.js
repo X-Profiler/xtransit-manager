@@ -14,6 +14,10 @@ class RedisService extends Service {
     return agentId;
   }
 
+  clientExpired(timestamp) {
+    return !timestamp || Date.now() - timestamp > 5 * 60 * 1000;
+  }
+
   async cleanExpiredXtransit() {
     const { ctx: { app: { redis, config: { appsKey } } } } = this;
     const livingApps = await redis.smembers(appsKey);
@@ -26,7 +30,7 @@ class RedisService extends Service {
       await pMap(Object.entries(agentIds), async ([agentId, agentInfo]) => {
         length++;
         const { timestamp } = JSON.parse(agentInfo);
-        if (!timestamp || Date.now() - timestamp > 5 * 60 * 1000) {
+        if (this.clientExpired(timestamp)) {
           const field = this.composeClientsField(agentId);
           await redis.hdel(key, field);
           length--;
@@ -121,7 +125,10 @@ class RedisService extends Service {
     }
     const map = {};
     for (const [agentId, agentInfo] of Object.entries(agents)) {
-      const { server, clientId } = JSON.parse(agentInfo);
+      const { server, clientId, timestamp } = JSON.parse(agentInfo);
+      if (this.clientExpired(timestamp)) {
+        continue;
+      }
       const data = { appId, agentId, clientId };
       if (map[server]) {
         map[server].push(data);

@@ -43,6 +43,7 @@ class XtransitService extends Service {
   }
 
   checkClientAlive(server, data) {
+    data.expiredTime = 5000;
     return this.request(server, '/xapi/check_client_alive', data, {});
   }
 
