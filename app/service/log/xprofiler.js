@@ -1,5 +1,6 @@
 'use strict';
 
+const pMap = require('p-map');
 const Service = require('egg').Service;
 
 class XprofilerService extends Service {
@@ -8,6 +9,9 @@ class XprofilerService extends Service {
     if (!Array.isArray(logs)) {
       return;
     }
+
+    const { ctx: { service: { mysql } } } = this;
+
     const logMap = logs.reduce((map, { pid, key, value }) => {
       if (map[pid]) {
         map[pid][key] = value;
@@ -17,7 +21,11 @@ class XprofilerService extends Service {
       return map;
     }, {});
 
-    console.log(12333, appId, agentId, logMap);
+    await pMap(Object.entries(logMap), async ([pid, log]) => {
+      const tasks = [];
+      tasks.push(mysql.saveXprofilerLog(appId, agentId, pid, log));
+      await Promise.all(tasks);
+    }, { concurrency: 2 });
   }
 }
 

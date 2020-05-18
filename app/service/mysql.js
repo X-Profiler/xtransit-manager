@@ -1,6 +1,50 @@
 'use strict';
 
+const moment = require('moment');
 const Service = require('egg').Service;
+
+const XPROFILER_KEY = [
+  // cpu
+  'cpu_now', 'cpu_15', 'cpu_30', 'cpu_60',
+
+  // memory overview
+  'rss', 'heap_used', 'heap_available', 'heap_total', 'heap_limit', 'heap_executeable', 'total_physical_size', 'malloced_memory', 'amount_of_external_allocated_memory',
+  // new space
+  'new_space_size', 'new_space_used', 'new_space_available', 'new_space_committed',
+  // old space
+  'old_space_size', 'old_space_used', 'old_space_available', 'old_space_committed',
+  // code space
+  'code_space_size', 'code_space_used', 'code_space_available', 'code_space_committed',
+  // map space
+  'map_space_size', 'map_space_used', 'map_space_available', 'map_space_committed',
+  // large object space
+  'lo_space_size', 'lo_space_used', 'lo_space_available', 'lo_space_committed',
+  // read only space
+  'read_only_space_size', 'read_only_space_used', 'read_only_space_available', 'read_only_space_committed',
+  // new large object space
+  'new_lo_space_size', 'new_lo_space_used', 'new_lo_space_available', 'new_lo_space_committed',
+  // code large objece space
+  'code_lo_space_size', 'code_lo_space_used', 'code_lo_space_available', 'code_lo_space_committed',
+
+  // gc total
+  'uptime', 'total_gc_times', 'total_gc_duration', 'total_scavange_duration', 'total_marksweep_duration', 'total_incremental_marking_duration',
+  // gc last time
+  'gc_time_during_last_record', 'scavange_duration_last_record', 'marksweep_duration_last_record', 'incremental_marking_duration_last_record',
+
+  // uv
+  'active_handles',
+  // file handles
+  'active_file_handles', 'active_and_ref_file_handles',
+  // tcp handles
+  'active_tcp_handles', 'active_and_ref_tcp_handles',
+  // udp handles
+  'active_udp_handles', 'active_and_ref_udp_handles',
+  // timer handles
+  'active_timer_handles', 'active_and_ref_timer_handles',
+
+  // http
+  'live_http_request', 'http_response_close', 'http_response_sent', 'http_request_timeout', 'http_patch_timeout', 'http_rt',
+];
 
 class MysqlService extends Service {
   consoleQuery(sql, params) {
@@ -19,6 +63,45 @@ class MysqlService extends Service {
     const sql = 'SELECT * FROM apps WHERE id = ?';
     const params = [appId];
     return this.consoleQuery(sql, params).then(data => data[0] || {});
+  }
+
+  getTable(tablePrefix, logTime) {
+    return `${tablePrefix}${moment(logTime).format('DD')}`;
+  }
+
+  checkLog(checkList, log, appId, agentId) {
+    const { ctx } = this;
+    for (const requiredKey of checkList) {
+      if (log[requiredKey] || log[requiredKey] === 0) {
+        continue;
+      }
+      ctx.logger.error(`app: ${appId} agent: ${agentId} don't have required key: ${requiredKey}, raw log: ${JSON.stringify(log)}`);
+      // adjust for sql
+      log[requiredKey] = 0;
+    }
+  }
+
+  saveXprofilerLog(appId, agentId, pid, log) {
+    this.checkLog(XPROFILER_KEY, log, appId, agentId);
+    const { time, version, response_codes } = log;
+    const table = this.getTable('process_', time);
+    const sql =
+      `INSERT INTO ${table} (`
+      + 'app, agent, pid, log_time, version'
+      + `, ${XPROFILER_KEY.join(', ')}, `
+      + 'response_codes) '
+      + 'values ('
+      + '?, ?, ?, ?, ?'
+      + `, ${XPROFILER_KEY.map(() => '?').join(', ')}, `
+      + '?)';
+
+    const params = [appId, agentId, pid, time, version];
+    for (const key of XPROFILER_KEY) {
+      params.push(log[key]);
+    }
+    params.push(response_codes || '');
+
+    return this.logsQuery(sql, params);
   }
 }
 
