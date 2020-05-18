@@ -9,6 +9,12 @@ class MysqlService extends Service {
     return xprofiler_console.query(sql, params);
   }
 
+  logsQuery(sql, params) {
+    const { ctx: { app: { mysql } } } = this;
+    const xprofiler_logs = mysql.get('xprofiler_logs');
+    return xprofiler_logs.query(sql, params);
+  }
+
   getAppByAppId(appId) {
     const sql = 'SELECT * FROM apps WHERE id = ?';
     const params = [appId];

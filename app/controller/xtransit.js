@@ -29,6 +29,21 @@ class XtransitController extends Controller {
 
     ctx.body = { ok: true };
   }
+
+  async handleLog() {
+    const { ctx, ctx: { service: { log: { xprofiler } } } } = this;
+    const { appId, agentId, log: { type, data } } = ctx.request.body;
+
+    switch (type) {
+      case 'xprofiler_log':
+        await xprofiler.handle(appId, agentId, data);
+        break;
+      default:
+        break;
+    }
+
+    ctx.body = { ok: true };
+  }
 }
 
 module.exports = XtransitController;

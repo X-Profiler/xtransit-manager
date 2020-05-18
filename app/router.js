@@ -22,4 +22,5 @@ module.exports = app => {
   router.post('/xtransit/app_secret', checkSign, checkParams(['appId']), 'xtransit.getAppSecret');
   router.post('/xtransit/update_client', checkSign, checkParams(['appId', 'agentId', 'clientId', 'server', 'timestamp']), 'xtransit.updateClient');
   router.post('/xtransit/remove_client', checkSign, checkParams(['appId', 'agentId', 'clientId']), 'xtransit.removeClient');
+  router.post('/xtransit/log', checkSign, checkParams(['appId', 'agentId', 'log']), 'xtransit.handleLog');
 };
