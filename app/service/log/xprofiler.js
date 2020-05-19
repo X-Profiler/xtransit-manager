@@ -5,12 +5,12 @@ const Service = require('egg').Service;
 
 class XprofilerService extends Service {
   async handle(appId, agentId, message) {
-    const { data: { xprofiler_version, log_time, logs } } = message;
-    if (!Array.isArray(logs)) {
+    const { xprofiler_version, log_time, logs } = message;
+    if (!Array.isArray(logs) || !logs.length) {
       return;
     }
 
-    const { ctx: { service: { mysql } } } = this;
+    const { ctx: { service: { mysql, log: { system, helper: { gc, http } } } } } = this;
 
     const logMap = logs.reduce((map, { pid, key, value }) => {
       if (map[pid]) {
@@ -20,6 +20,10 @@ class XprofilerService extends Service {
       }
       return map;
     }, {});
+
+    const gcAvg = gc.calculateGcAvg(logMap);
+    const httpInfo = http.calculateHttp(logMap);
+    await system.handle(appId, agentId, { ...gcAvg, ...httpInfo });
 
     await pMap(Object.entries(logMap), async ([pid, log]) => {
       const tasks = [];
