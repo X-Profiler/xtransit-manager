@@ -72,7 +72,7 @@ class MysqlService extends Service {
   checkLog(checkList, log, appId, agentId) {
     const { ctx } = this;
     for (const requiredKey of checkList) {
-      if (log[requiredKey] || log[requiredKey] === 0) {
+      if (log[requiredKey] || log[requiredKey] === 0 || Math.abs(log[requiredKey]) < Math.pow(2, 32)) {
         continue;
       }
       ctx.logger.error(`app: ${appId} agent: ${agentId} don't have required key: ${requiredKey}, raw log: ${JSON.stringify(log)}`);
