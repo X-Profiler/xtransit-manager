@@ -22,6 +22,23 @@ class HttpService extends Service {
     return false;
   }
 
+  getStatusMap(log, statusMap = {}) {
+    // add http code
+    for (const [key, value] of Object.entries(log)) {
+      if (!key.startsWith(STATUS_CODE_PREFIX)) {
+        continue;
+      }
+      const statusCode = key.replace(STATUS_CODE_PREFIX, '');
+      if (statusMap[statusCode]) {
+        statusMap[statusCode] += value;
+      } else {
+        statusMap[statusCode] = value;
+      }
+    }
+
+    return statusMap;
+  }
+
   calculateHttp(logs) {
     const keys = [
       { key: 'live_http_request', avg: false },
@@ -51,17 +68,7 @@ class HttpService extends Service {
       patchTimeout = log.http_patch_timeout;
 
       // add http code
-      for (const [key, value] of Object.entries(log)) {
-        if (!key.startsWith(STATUS_CODE_PREFIX)) {
-          continue;
-        }
-        const statusCode = key.replace(STATUS_CODE_PREFIX, '');
-        if (statusMap[statusCode]) {
-          statusMap[statusCode] += value;
-        } else {
-          statusMap[statusCode] = value;
-        }
-      }
+      this.getStatusMap(log, statusMap);
     }
 
     Object.entries(init).forEach(([key, value]) => {

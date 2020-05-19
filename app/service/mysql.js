@@ -46,6 +46,35 @@ const XPROFILER_KEY = [
   'live_http_request', 'http_response_close', 'http_response_sent', 'http_request_timeout', 'http_patch_timeout', 'http_rt',
 ];
 
+const SYSTEM_KEY = [
+  // system
+  'uptime',
+
+  // cpu
+  'used_cpu', 'cpu_count',
+
+  // memory
+  // 'total_memory', 'free_memory',
+
+  // load
+  'load1', 'load5', 'load15',
+
+  // disks
+  // 'disks',
+
+  // process
+  'node_count',
+
+  // gc total
+  'total_gc_times', 'total_gc_duration', 'total_scavange_duration', 'total_marksweep_duration', 'total_incremental_marking_duration',
+  // gc last time
+  'gc_time_during_last_record', 'scavange_duration_last_record', 'marksweep_duration_last_record', 'incremental_marking_duration_last_record',
+
+  // http
+  // 'response_codes',
+  'live_http_request', 'http_response_close', 'http_response_sent', 'http_request_timeout', 'http_patch_timeout', 'http_rt',
+];
+
 class MysqlService extends Service {
   consoleQuery(sql, params) {
     const { ctx: { app: { mysql } } } = this;
@@ -69,13 +98,15 @@ class MysqlService extends Service {
     return `${tablePrefix}${moment(logTime).format('DD')}`;
   }
 
-  checkLog(checkList, log, appId, agentId) {
+  checkLog(checkList, log, appId, agentId, outputError = true) {
     const { ctx } = this;
     for (const requiredKey of checkList) {
       if (log[requiredKey] || log[requiredKey] === 0 || Math.abs(log[requiredKey]) < Math.pow(2, 32)) {
         continue;
       }
-      ctx.logger.error(`app: ${appId} agent: ${agentId} don't have required key: ${requiredKey}, raw log: ${JSON.stringify(log)}`);
+      if (outputError) {
+        ctx.logger.error(`app: ${appId} agent: ${agentId} don't have required key: ${requiredKey}, raw log: ${JSON.stringify(log)}`);
+      }
       // adjust for sql
       log[requiredKey] = 0;
     }
@@ -83,7 +114,7 @@ class MysqlService extends Service {
 
   saveXprofilerLog(appId, agentId, pid, log) {
     this.checkLog(XPROFILER_KEY, log, appId, agentId);
-    const { time, version, response_codes } = log;
+    const { time, version, statusMap } = log;
     const table = this.getTable('process_', time);
     const sql =
       `INSERT INTO ${table} (`
@@ -99,7 +130,28 @@ class MysqlService extends Service {
     for (const key of XPROFILER_KEY) {
       params.push(log[key]);
     }
-    params.push(response_codes || '');
+    params.push(JSON.stringify(statusMap) || '{}');
+
+    return this.logsQuery(sql, params);
+  }
+
+  saveSystemLog(appId, agentId, log) {
+    this.checkLog(SYSTEM_KEY, log, appId, agentId, false);
+    const { log_time, version, total_memory, free_memory, disks, statusMap } = log;
+    const table = this.getTable('osinfo_', log_time);
+    const sql =
+      `INSERT INTO ${table} (`
+      + 'app, agent, log_time, version, total_memory, free_memory, disks, response_codes'
+      + `,  ${SYSTEM_KEY.join(', ')}) `
+      + 'values ('
+      + '?, ?, ?, ?, ?, ?, ?, ?'
+      + `, ${SYSTEM_KEY.map(() => '?').join(', ')})`;
+
+    const params = [appId, agentId, log_time, version || '', total_memory || 0, free_memory || 0,
+      JSON.stringify(disks) || '{}', JSON.stringify(statusMap) || '{}'];
+    for (const key of SYSTEM_KEY) {
+      params.push(log[key]);
+    }
 
     return this.logsQuery(sql, params);
   }

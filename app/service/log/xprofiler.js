@@ -27,6 +27,7 @@ class XprofilerService extends Service {
 
     await pMap(Object.entries(logMap), async ([pid, log]) => {
       const tasks = [];
+      log.statusMap = http.getStatusMap(log);
       tasks.push(mysql.saveXprofilerLog(appId, agentId, pid, log));
       await Promise.all(tasks);
     }, { concurrency: 2 });
