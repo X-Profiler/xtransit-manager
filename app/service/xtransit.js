@@ -58,6 +58,10 @@ class XtransitService extends Service {
   checkProcessStatus(appId, agentId, pid) {
     return this.execCommand(appId, agentId, `check_process_status ${pid}`, {});
   }
+
+  checkProcessesAlive(appId, agentId, pids) {
+    return this.execCommand(appId, agentId, `check_processes_alive ${pids.join(' ')}`, {});
+  }
 }
 
 module.exports = XtransitService;

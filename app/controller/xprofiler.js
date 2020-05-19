@@ -38,6 +38,15 @@ class XprofilerController extends Controller {
 
     ctx.body = { ok: true, data: nodeProcesses };
   }
+
+  async checkProcessesAlive() {
+    const { ctx, ctx: { service: { xtransit } } } = this;
+    const { appId, agentId, pids } = ctx.request.body;
+
+    const processesAlive = await xtransit.checkProcessesAlive(appId, agentId, pids);
+
+    ctx.body = { ok: true, data: processesAlive };
+  }
 }
 
 module.exports = XprofilerController;
