@@ -103,3 +103,56 @@ CREATE TABLE `process`(
   PRIMARY KEY (`id`),
   INDEX (`app`, `agent`, `pid`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+DROP TABLE IF EXISTS `osinfo`;
+CREATE TABLE `osinfo`(
+  `id` INT UNSIGNED AUTO_INCREMENT,
+  `app` INT NOT NULL,
+  `agent` VARCHAR(50) NOT NULL,
+  `uptime` INT UNSIGNED NOT NULL COMMENT 'system uptime',
+  `log_time` DATETIME NOT NULL COMMENT 'system log created time on agent',
+
+  -- cpu
+  `used_cpu` DOUBLE,
+  `cpu_count` INT UNSIGNED,
+
+  -- mem
+  `total_memory` BIGINT UNSIGNED,
+  `free_memory` BIGINT UNSIGNED,
+
+  -- load
+  `load1` DOUBLE,
+  `load5` DOUBLE,
+  `load15` DOUBLE,
+
+  -- disks
+  `disks` VARCHAR(1024),
+
+  -- node count
+  `node_count` INT UNSIGNED,
+
+  -- gc
+  `total_gc_times` INT UNSIGNED COMMENT 'total count of gc (all process)',
+  `total_gc_duration` INT UNSIGNED COMMENT 'total duration of gc (all process)',
+  `total_scavange_duration` INT UNSIGNED COMMENT 'total scavange duration of gc (all process)',
+  `total_marksweep_duration` INT UNSIGNED COMMENT 'total marksweep duration of gc (all process)',
+  `total_incremental_marking_duration` INT UNSIGNED COMMENT 'total incremental marking duration of gc (all process)',
+  `gc_time_during_last_record` INT UNSIGNED COMMENT 'duration of last gc (all process)',
+  `scavange_duration_last_record` INT UNSIGNED COMMENT 'scavange duration of last gc (all process)',
+  `marksweep_duration_last_record` INT UNSIGNED COMMENT 'marksweep duration of last gc (all process)',
+  `incremental_marking_duration_last_record` INT UNSIGNED COMMENT 'incremental marking duration of last gc (all process)',
+
+  -- http
+  `response_codes` VARCHAR(1024) DEFAULT '',
+  `live_http_request` INT UNSIGNED,
+  `http_response_close` INT UNSIGNED,
+  `http_response_sent` INT UNSIGNED,
+  `http_request_timeout` INT UNSIGNED,
+  `http_patch_timeout` INT UNSIGNED,
+  `http_rt` DOUBLE,
+
+  `gm_modified` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `gm_create` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX (`app`, `agent`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
