@@ -135,19 +135,19 @@ class MysqlService extends Service {
     return this.logsQuery(sql, params);
   }
 
-  saveSystemLog(appId, agentId, log) {
+  saveSystemLog(appId, agentId, log, position) {
     this.checkLog(SYSTEM_KEY, log, appId, agentId, false);
     const { log_time, version, total_memory, free_memory, disks, statusMap } = log;
     const table = this.getTable('osinfo_', log_time);
     const sql =
       `INSERT INTO ${table} (`
-      + 'app, agent, log_time, version, total_memory, free_memory, disks, response_codes'
+      + 'app, agent, log_time, position, version, total_memory, free_memory, disks, response_codes'
       + `,  ${SYSTEM_KEY.join(', ')}) `
       + 'values ('
-      + '?, ?, ?, ?, ?, ?, ?, ?'
+      + '?, ?, ?, ?, ?, ?, ?, ?, ?'
       + `, ${SYSTEM_KEY.map(() => '?').join(', ')})`;
 
-    const params = [appId, agentId, log_time, version || '', total_memory || 0, free_memory || 0,
+    const params = [appId, agentId, log_time, position, version || '', total_memory || 0, free_memory || 0,
       JSON.stringify(disks) || '{}', JSON.stringify(statusMap) || '{}'];
     for (const key of SYSTEM_KEY) {
       params.push(log[key]);

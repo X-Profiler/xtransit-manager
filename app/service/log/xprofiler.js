@@ -23,7 +23,7 @@ class XprofilerService extends Service {
 
     const gcAvg = gc.calculateGcAvg(logMap);
     const httpInfo = http.calculateHttp(logMap);
-    await system.handle(appId, agentId, { ...gcAvg, ...httpInfo });
+    await system.handle(appId, agentId, { ...gcAvg, ...httpInfo }, 1);
 
     await pMap(Object.entries(logMap), async ([pid, log]) => {
       const tasks = [];

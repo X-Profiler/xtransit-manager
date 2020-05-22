@@ -111,6 +111,7 @@ CREATE TABLE `osinfo`(
   `agent` VARCHAR(50) NOT NULL,
   `uptime` INT UNSIGNED NOT NULL COMMENT 'system uptime',
   `log_time` DATETIME NOT NULL COMMENT 'system log created time on agent',
+  `position` TINYINT UNSIGNED NOT NULL COMMENT '0: from system_log, 1: from xprofiler_log',
   `version` VARCHAR(50) DEFAULT '' COMMENT 'xprofiler version',
 
   -- cpu
