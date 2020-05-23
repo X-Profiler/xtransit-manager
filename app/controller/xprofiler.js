@@ -48,6 +48,15 @@ class XprofilerController extends Controller {
     ctx.body = { ok: true, data: processesAlive };
   }
 
+  async checkFileStatus() {
+    const { ctx, ctx: { service: { xtransit } } } = this;
+    const { appId, agentId, filePath } = ctx.request.body;
+
+    const fileStatus = await xtransit.checkFileStatus(appId, agentId, filePath);
+
+    ctx.body = { ok: true, data: fileStatus };
+  }
+
   async takeAction() {
     const { ctx, ctx: { service: { xtransit } } } = this;
     const { appId, agentId, pid, command, options } = ctx.request.body;

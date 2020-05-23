@@ -14,10 +14,12 @@ module.exports = app => {
 
   // xprofiler-console
   router.post('/xprofiler/clients', checkSign, checkParams(['appId']), 'xprofiler.getClients');
+  // commands
   router.post('/xprofiler/agent_osinfo', checkSign, checkParams(['appId', 'agentId']), 'xprofiler.getAgentOsInfo');
   router.post('/xprofiler/agent_node_processes', checkSign, checkParams(['appId', 'agentId']), 'xprofiler.getAgentNodeProcesses');
   router.post('/xprofiler/check_process_status', checkSign, checkParams(['appId', 'agentId', 'pid']), 'xprofiler.checkProcessStatus');
   router.post('/xprofiler/check_processes_alive', checkSign, checkParams(['appId', 'agentId', 'pids']), 'xprofiler.checkProcessesAlive');
+  router.post('/xprofiler/check_file_status', checkSign, checkParams(['appId', 'agentId', 'filePath']), 'xprofiler.checkFileStatus');
   router.post('/xprofiler/take_action', checkSign, checkParams(['appId', 'agentId', 'pid', 'command', 'options']), 'xprofiler.takeAction');
 
   // xtransit-server
