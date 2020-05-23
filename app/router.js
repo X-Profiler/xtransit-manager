@@ -18,6 +18,7 @@ module.exports = app => {
   router.post('/xprofiler/agent_node_processes', checkSign, checkParams(['appId', 'agentId']), 'xprofiler.getAgentNodeProcesses');
   router.post('/xprofiler/check_process_status', checkSign, checkParams(['appId', 'agentId', 'pid']), 'xprofiler.checkProcessStatus');
   router.post('/xprofiler/check_processes_alive', checkSign, checkParams(['appId', 'agentId', 'pids']), 'xprofiler.checkProcessesAlive');
+  router.post('/xprofiler/take_action', checkSign, checkParams(['appId', 'agentId', 'pid', 'command', 'options']), 'xprofiler.takeAction');
 
   // xtransit-server
   router.post('/xtransit/app_secret', checkSign, checkParams(['appId']), 'xtransit.getAppSecret');
