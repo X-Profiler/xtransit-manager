@@ -25,6 +25,16 @@ module.exports = appInfo => {
     },
   };
 
+  config.secure = {
+    secret: 'easy-monitor::xprofiler',
+  };
+
+  config.httpTimeout = 15000;
+
+  config.appsKey = 'XTRANSIT_APP';
+
+  config.clientsPrefix = 'XTRANSIT_CLIENT::';
+
   const userConfig = {};
 
   // mysql
@@ -59,16 +69,6 @@ module.exports = appInfo => {
       db: 0,
     },
   };
-
-  userConfig.secure = {
-    secret: 'easy-monitor::xprofiler',
-  };
-
-  userConfig.httpTimeout = 15000;
-
-  userConfig.appsKey = 'XTRANSIT_APP';
-
-  userConfig.clientsPrefix = 'XTRANSIT_CLIENT::';
 
   return {
     ...config,

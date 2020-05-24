@@ -27,7 +27,7 @@ class XtransitService extends Service {
     }
   }
 
-  async execCommand(appId, agentId, command, defaultValue, expiredTime = 15 * 1000) {
+  async execCommand(appId, agentId, command, expiredTime = 15 * 1000, defaultValue) {
     const { ctx: { service: { redis } } } = this;
     const { server, clientId } = await redis.getClient(appId, agentId);
     if (!server) {
@@ -48,27 +48,31 @@ class XtransitService extends Service {
   }
 
   getAgentOsInfo(appId, agentId) {
-    return this.execCommand(appId, agentId, 'get_os_info', {});
+    return this.execCommand(appId, agentId, 'get_os_info');
   }
 
   getAgentNodeProcesses(appId, agentId) {
-    return this.execCommand(appId, agentId, 'get_node_processes', {});
+    return this.execCommand(appId, agentId, 'get_node_processes');
   }
 
   checkProcessStatus(appId, agentId, pid) {
-    return this.execCommand(appId, agentId, `check_process_status ${pid}`, {});
+    return this.execCommand(appId, agentId, `check_process_status ${pid}`);
   }
 
   checkProcessesAlive(appId, agentId, pids) {
-    return this.execCommand(appId, agentId, `check_processes_alive ${pids.join(' ')}`, {});
+    return this.execCommand(appId, agentId, `check_processes_alive ${pids.join(' ')}`);
   }
 
   checkFileStatus(appId, agentId, filePath) {
-    return this.execCommand(appId, agentId, `check_file_status ${filePath}`, {});
+    return this.execCommand(appId, agentId, `check_file_status ${filePath}`);
   }
 
   takeAction(appId, agentId, pid, command, options) {
-    return this.execCommand(appId, agentId, `xprofctl ${pid} ${command} ${JSON.stringify(options)}`, {});
+    return this.execCommand(appId, agentId, `xprofctl ${pid} ${command} ${JSON.stringify(options)}`);
+  }
+
+  transferFile(appId, agentId, fileId, fileType, filePath, server, token, expiredTime) {
+    return this.execCommand(appId, agentId, `upload_file ${fileId} ${fileType} ${filePath} ${server} ${token}`, expiredTime);
   }
 }
 

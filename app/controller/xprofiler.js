@@ -65,6 +65,15 @@ class XprofilerController extends Controller {
 
     ctx.body = { ok: true, data: actionResult };
   }
+
+  async transferFile() {
+    const { ctx, ctx: { service: { xtransit } } } = this;
+    const { appId, agentId, fileId, fileType, filePath, server, token, expiredTime } = ctx.request.body;
+
+    const transferResponse = await xtransit.transferFile(appId, agentId, fileId, fileType, filePath, server, token, expiredTime);
+
+    ctx.body = { ok: true, data: transferResponse };
+  }
 }
 
 module.exports = XprofilerController;
