@@ -88,12 +88,21 @@ class MysqlService extends Service {
     return xprofiler_logs.query(sql, params);
   }
 
+  /* table <apps> */
   getAppByAppId(appId) {
     const sql = 'SELECT * FROM apps WHERE id = ?';
     const params = [appId];
     return this.consoleQuery(sql, params).then(data => data[0] || {});
   }
 
+  /* table <files> */
+  updateFileStatusByAppAgentFile(appId, agentId, filePath) {
+    const sql = 'UPDATE files SET status = ? WHERE app = ? AND agent = ? AND file = ? AND status = ?';
+    const params = [1, appId, agentId, filePath, 0];
+    return this.consoleQuery(sql, params);
+  }
+
+  /* table ${log_table}_${DD} */
   getTable(tablePrefix, logTime) {
     return `${tablePrefix}${moment(logTime).format('DD')}`;
   }

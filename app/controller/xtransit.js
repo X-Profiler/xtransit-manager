@@ -47,6 +47,15 @@ class XtransitController extends Controller {
 
     ctx.body = { ok: true };
   }
+
+  async updateActionStatus() {
+    const { ctx, ctx: { service: { mysql } } } = this;
+    const { appId, agentId, filePath } = ctx.request.body;
+
+    await mysql.updateFileStatusByAppAgentFile(appId, agentId, filePath);
+
+    ctx.body = { ok: true };
+  }
 }
 
 module.exports = XtransitController;

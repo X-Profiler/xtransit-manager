@@ -27,4 +27,5 @@ module.exports = app => {
   router.post('/xtransit/update_client', checkSign, checkParams(['appId', 'agentId', 'clientId', 'server', 'timestamp']), 'xtransit.updateClient');
   router.post('/xtransit/remove_client', checkSign, checkParams(['appId', 'agentId', 'clientId']), 'xtransit.removeClient');
   router.post('/xtransit/log', checkSign, checkParams(['appId', 'agentId', 'log']), 'xtransit.handleLog');
+  router.post('/xtransit/update_action_status', checkSign, checkParams(['appId', 'agentId', 'filePath']), 'xtransit.updateActionStatus');
 };
