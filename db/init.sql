@@ -104,6 +104,7 @@ CREATE TABLE `process`(
   INDEX (`app`, `agent`, `pid`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- template: `osinfo-${MM-DD}`
 DROP TABLE IF EXISTS `osinfo`;
 CREATE TABLE `osinfo`(
   `id` INT UNSIGNED AUTO_INCREMENT,
@@ -157,4 +158,18 @@ CREATE TABLE `osinfo`(
   `gm_create` DATETIME DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   INDEX (`app`, `agent`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- template: `alarm-${MM-DD}`
+DROP TABLE IF EXISTS `alarm`;
+CREATE TABLE `alarm`(
+  `id` INT UNSIGNED AUTO_INCREMENT,
+  `strategy` INT UNSIGNED NOT NULL,
+  `agent` VARCHAR(50) NOT NULL,
+  `message` VARCHAR(250) NOT NULL,
+  `pid` INT DEFAULT NULL,
+  `gm_modified` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `gm_create` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX (`strategy`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
