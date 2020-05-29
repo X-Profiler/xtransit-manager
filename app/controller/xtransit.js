@@ -31,7 +31,7 @@ class XtransitController extends Controller {
   }
 
   async handleLog() {
-    const { ctx, ctx: { service: { log: { xprofiler, system } } } } = this;
+    const { ctx, ctx: { service: { log: { xprofiler, system, error, package: pkg } } } } = this;
     const { appId, agentId, log: { type, data } } = ctx.request.body;
 
     switch (type) {
@@ -40,6 +40,12 @@ class XtransitController extends Controller {
         break;
       case 'system_log':
         await system.handle(appId, agentId, data);
+        break;
+      case 'error_log':
+        await error.handle(appId, agentId, data);
+        break;
+      case 'package':
+        await pkg.handle(appId, agentId, data);
         break;
       default:
         break;
