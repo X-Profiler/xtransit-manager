@@ -1,6 +1,7 @@
 'use strict';
 
 const moment = require('moment');
+const pMap = require('p-map');
 const Service = require('egg').Service;
 
 const XPROFILER_KEY = [
@@ -76,13 +77,13 @@ const SYSTEM_KEY = [
 ];
 
 class MysqlService extends Service {
-  consoleQuery(sql, params) {
+  consoleQuery(sql, params = []) {
     const { ctx: { app: { mysql } } } = this;
     const xprofiler_console = mysql.get('xprofiler_console');
     return xprofiler_console.query(sql, params);
   }
 
-  logsQuery(sql, params) {
+  logsQuery(sql, params = []) {
     const { ctx: { app: { mysql } } } = this;
     const xprofiler_logs = mysql.get('xprofiler_logs');
     return xprofiler_logs.query(sql, params);
@@ -102,7 +103,7 @@ class MysqlService extends Service {
     return this.consoleQuery(sql, params);
   }
 
-  /* table ${log_table}_${DD} */
+  /* save table ${log_table}_${DD} */
   getTable(tablePrefix, logTime) {
     return `${tablePrefix}${moment(logTime).format('DD')}`;
   }
@@ -163,6 +164,36 @@ class MysqlService extends Service {
     }
 
     return this.logsQuery(sql, params);
+  }
+
+  /* clean table ${log_table}_${DD} */
+  async cleanHistory(prefix, expired) {
+    const remains = [];
+    const now = Date.now();
+    for (let i = 0; i < expired; i++) {
+      remains.push(`${prefix}${moment(now - i * 24 * 3600 * 1000).format('DD')}`);
+    }
+
+    const tables = new Array(31)
+      .fill('')
+      .map((...args) => `${prefix}${(args[1] + 1) < 10 ? `0${(args[1] + 1)}` : (args[1] + 1)}`);
+    await pMap(tables, async table => {
+      if (remains.includes(table)) {
+        return;
+      }
+      await this.logsQuery(`DELETE FROM ${table}`);
+      await this.logsQuery(`OPTIMIZE TABLE ${table}`);
+    }, { concurrency: 2 });
+  }
+
+  async cleanProcessHistory() {
+    const { ctx: { app: { config } } } = this;
+    await this.cleanHistory('process_', config.processHistoryStorage);
+  }
+
+  async cleanOsHistory() {
+    const { ctx: { app: { config } } } = this;
+    await this.cleanHistory('osinfo_', config.processHistoryStorage);
   }
 }
 

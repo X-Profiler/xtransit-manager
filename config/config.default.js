@@ -49,6 +49,8 @@ module.exports = appInfo => {
 
   config.packageStorage = 7;
 
+  config.processHistoryStorage = 7;
+
   const userConfig = {};
 
   // mysql

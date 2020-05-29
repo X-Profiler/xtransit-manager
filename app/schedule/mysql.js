@@ -2,7 +2,7 @@
 
 const Subscription = require('egg').Subscription;
 
-class RedisSubscription extends Subscription {
+class MysqlSubscription extends Subscription {
   static get schedule() {
     return {
       cron: '0 0 0 * * *',
@@ -12,10 +12,10 @@ class RedisSubscription extends Subscription {
   }
 
   async subscribe() {
-    const { ctx: { service: { redis } } } = this;
-    await redis.cleanExpiredFile();
-    await redis.cleanExpiredXtransit();
+    const { ctx: { service: { mysql } } } = this;
+    await mysql.cleanOsHistory();
+    await mysql.cleanProcessHistory();
   }
 }
 
-module.exports = RedisSubscription;
+module.exports = MysqlSubscription;
