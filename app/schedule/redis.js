@@ -13,6 +13,7 @@ class XtransitSubscription extends Subscription {
 
   async subscribe() {
     const { ctx: { service: { redis } } } = this;
+    await redis.cleanExpiredFile();
     await redis.cleanExpiredXtransit();
   }
 }

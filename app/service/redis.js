@@ -37,12 +37,8 @@ class RedisService extends Service {
     return key;
   }
 
-  clientExpired(timestamp) {
-    return !timestamp || Date.now() - timestamp > 5 * 60 * 1000;
-  }
-
-  fileExpired(timestamp) {
-    return !timestamp || Date.now() - timestamp > 5 * 60 * 1000;
+  checkExpired(timestamp, expired = 300) {
+    return !timestamp || Date.now() - timestamp > expired * 1000;
   }
 
   async cleanExpiredXtransit() {
@@ -50,14 +46,13 @@ class RedisService extends Service {
     const livingApps = await redis.smembers(appsKey);
     await pMap(livingApps, async appId => {
       const key = this.composeClientsKey(appId);
-
       // clean expired agents
       const agentIds = await redis.hgetall(key);
       let length = 0;
       await pMap(Object.entries(agentIds), async ([agentId, agentInfo]) => {
         length++;
         const { timestamp } = JSON.parse(agentInfo);
-        if (this.clientExpired(timestamp)) {
+        if (this.checkExpired(timestamp)) {
           const field = this.composeClientsField(agentId);
           await redis.hdel(key, field);
           length--;
@@ -67,6 +62,33 @@ class RedisService extends Service {
       // check app is still living
       if (length === 0) {
         await redis.srem(appsKey, appId);
+      }
+    }, { concurrency: 2 });
+  }
+
+  async cleanExpiredFile() {
+    const { ctx: { app: { redis, config: { logsKey } } } } = this;
+    const livingFiles = await redis.smembers(logsKey);
+    await pMap(livingFiles, async key => {
+      const files = await redis.hgetall(key);
+      let length = 0;
+      await pMap(Object.entries(files), async ([filePath, fileInfo]) => {
+        length++;
+        const { type, timestamp } = JSON.parse(fileInfo);
+        const expired = type === 'package' ? 24 * 60 * 60 : 5 * 60;
+        if (this.checkExpired(timestamp, expired)) {
+          const field = this.composeLogsField(filePath);
+          await redis.hdel(key, field);
+          const fileKey = type === 'package'
+            ? this.composePackageKey(filePath)
+            : this.composeErrorLogKey(filePath);
+          await redis.del(fileKey);
+          length--;
+        }
+      }, { concurrency: 2 });
+
+      if (length === 0) {
+        await redis.srem(logsKey, key);
       }
     }, { concurrency: 2 });
   }
@@ -153,7 +175,7 @@ class RedisService extends Service {
     const map = {};
     for (const [agentId, agentInfo] of Object.entries(agents)) {
       const { server, clientId, timestamp } = JSON.parse(agentInfo);
-      if (this.clientExpired(timestamp)) {
+      if (this.checkExpired(timestamp)) {
         continue;
       }
       const data = { appId, agentId, clientId };
