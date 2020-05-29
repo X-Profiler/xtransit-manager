@@ -1,5 +1,6 @@
 'use strict';
 
+const moment = require('moment');
 const pMap = require('p-map');
 const Service = require('egg').Service;
 
@@ -14,7 +15,33 @@ class RedisService extends Service {
     return agentId;
   }
 
+  composeLogsKey(appId, agentId) {
+    const { ctx: { app: { config: { logsPrefix } } } } = this;
+    const key = `${logsPrefix}${appId}::${agentId}`;
+    return key;
+  }
+
+  composeLogsField(filePath) {
+    return filePath;
+  }
+
+  composeErrorLogKey(errorLogPath) {
+    const { ctx: { app: { config: { errorLogPrefix } } } } = this;
+    const key = `${errorLogPrefix}${errorLogPath}`;
+    return key;
+  }
+
+  composePackageKey(packagePath) {
+    const { ctx: { app: { config: { packagePrefix } } } } = this;
+    const key = `${packagePrefix}${packagePath}`;
+    return key;
+  }
+
   clientExpired(timestamp) {
+    return !timestamp || Date.now() - timestamp > 5 * 60 * 1000;
+  }
+
+  fileExpired(timestamp) {
     return !timestamp || Date.now() - timestamp > 5 * 60 * 1000;
   }
 
@@ -152,6 +179,38 @@ class RedisService extends Service {
     }, { concurrency: 2 });
 
     return livingClients;
+  }
+
+  async updateLogs(appId, agentId, logFile, type) {
+    const { ctx: { app: { redis, config: { logsKey } } } } = this;
+
+    const key = this.composeLogsKey(appId, agentId);
+    await redis.sadd(logsKey, key);
+    const field = this.composeLogsField(logFile);
+    const value = JSON.stringify({ type, timestamp: Date.now() });
+    await redis.hset(key, field, value);
+  }
+
+  async saveErrorLogs(errorLogPath, errorLogs) {
+    const { ctx: { app: { redis, config: { errorLogLimit, errorLogStorage } } } } = this;
+
+    // save error logs
+    const key = this.composeErrorLogKey(errorLogPath);
+    await redis.lpush(key, ...errorLogs.map(log => JSON.stringify(log)));
+    await redis.ltrim(key, 0, errorLogLimit - 1);
+
+    // expired
+    const date = moment().add(errorLogStorage, 'days');
+    const timestamp = date.startOf('day').unix();
+    await redis.expireat(key, timestamp);
+  }
+
+  async savePackage(packagePath, pkg, lock) {
+    const { ctx: { app: { redis, config: { packageStorage } } } } = this;
+
+    // save package
+    const key = this.composePackageKey(packagePath);
+    await redis.setex(key, packageStorage * 24 * 60 * 60, JSON.stringify({ pkg, lock }));
   }
 }
 

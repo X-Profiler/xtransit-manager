@@ -35,6 +35,20 @@ module.exports = appInfo => {
 
   config.clientsPrefix = 'XTRANSIT_CLIENT::';
 
+  config.logsKey = 'XTRANSIT_LOG';
+
+  config.logsPrefix = 'XTRANSIT_LOG_FILE::';
+
+  config.errorLogPrefix = 'XTRANSIT_ERROR_LOG::';
+
+  config.errorLogLimit = 5000;
+
+  config.errorLogStorage = 7;
+
+  config.packagePrefix = 'XTRANSIT_PKG_LOG::';
+
+  config.packageStorage = 7;
+
   const userConfig = {};
 
   // mysql
