@@ -21,6 +21,23 @@ class XprofilerController extends Controller {
     ctx.body = { ok: true, data: { files } };
   }
 
+  async getErrors() {
+    const { ctx, ctx: { service: { redis } } } = this;
+    const { appId, agentId, errorFile, currentPage, pageSize } = ctx.request.body;
+
+    // check file
+    const files = await redis.getFiles(appId, agentId, 'error');
+    if (!files.includes(errorFile)) {
+      ctx.body = { ok: false, message: `file <${errorFile}> not exists on [${appId}::${agentId}]` };
+      return;
+    }
+
+    // get errors
+    const data = await redis.getErrors(errorFile, currentPage, pageSize);
+
+    ctx.body = { ok: true, data };
+  }
+
   async getAgentOsInfo() {
     const { ctx, ctx: { service: { xtransit } } } = this;
     const { appId, agentId } = ctx.request.body;

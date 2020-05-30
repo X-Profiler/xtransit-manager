@@ -260,6 +260,25 @@ class RedisService extends Service {
 
     return list;
   }
+
+  async getErrors(errorLogPath, currentPage, pageSize) {
+    const { ctx: { app: { redis } } } = this;
+    const key = this.composeErrorLogKey(errorLogPath);
+    const count = await redis.llen(key);
+    const start = (currentPage - 1) * pageSize;
+    const stop = currentPage * pageSize - 1;
+    let errors = await redis.lrange(key, start, stop);
+    errors = errors.map(log => {
+      try {
+        log = JSON.parse(log);
+        return log;
+      } catch (err) {
+        return null;
+      }
+    }).filter(log => log);
+
+    return { count, errors };
+  }
 }
 
 module.exports = RedisService;
