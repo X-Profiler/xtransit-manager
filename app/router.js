@@ -14,6 +14,7 @@ module.exports = app => {
 
   // xprofiler-console
   router.post('/xprofiler/clients', checkSign, checkParams(['appId']), 'xprofiler.getClients');
+  router.post('/xprofiler/files', checkSign, checkParams(['appId', 'agentId', 'type']), 'xprofiler.getFiles');
   // commands
   router.post('/xprofiler/agent_osinfo', checkSign, checkParams(['appId', 'agentId']), 'xprofiler.getAgentOsInfo');
   router.post('/xprofiler/agent_node_processes', checkSign, checkParams(['appId', 'agentId']), 'xprofiler.getAgentNodeProcesses');

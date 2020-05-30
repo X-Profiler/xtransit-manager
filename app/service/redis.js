@@ -37,6 +37,10 @@ class RedisService extends Service {
     return key;
   }
 
+  getExpiredTime(type) {
+    return type === 'package' ? 24 * 60 * 60 : 5 * 60;
+  }
+
   checkExpired(timestamp, expired = 300) {
     return !timestamp || Date.now() - timestamp > expired * 1000;
   }
@@ -75,7 +79,7 @@ class RedisService extends Service {
       await pMap(Object.entries(files), async ([filePath, fileInfo]) => {
         length++;
         const { type, timestamp } = JSON.parse(fileInfo);
-        const expired = type === 'package' ? 24 * 60 * 60 : 5 * 60;
+        const expired = this.getExpiredTime(type);
         if (this.checkExpired(timestamp, expired)) {
           const field = this.composeLogsField(filePath);
           await redis.hdel(key, field);
@@ -233,6 +237,28 @@ class RedisService extends Service {
     // save package
     const key = this.composePackageKey(packagePath);
     await redis.setex(key, packageStorage * 24 * 60 * 60, JSON.stringify({ pkg, lock }));
+  }
+
+  async getFiles(appId, agentId, type) {
+    const { ctx: { app: { redis } } } = this;
+    const key = this.composeLogsKey(appId, agentId);
+    const files = await redis.hgetall(key);
+    const list = [];
+    for (const [filePath, fileInfo] of Object.entries(files)) {
+      const { timestamp, type: fileType } = JSON.parse(fileInfo);
+      if (fileType !== type) {
+        continue;
+      }
+
+      const expired = this.getExpiredTime(fileType);
+      if (this.checkExpired(timestamp, expired)) {
+        continue;
+      }
+
+      list.push(filePath);
+    }
+
+    return list;
   }
 }
 

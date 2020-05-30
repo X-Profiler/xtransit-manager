@@ -12,6 +12,15 @@ class XprofilerController extends Controller {
     ctx.body = { ok: true, data: { clients } };
   }
 
+  async getFiles() {
+    const { ctx, ctx: { service: { redis } } } = this;
+    const { appId, agentId, type } = ctx.request.body;
+
+    const files = await redis.getFiles(appId, agentId, type);
+
+    ctx.body = { ok: true, data: { files } };
+  }
+
   async getAgentOsInfo() {
     const { ctx, ctx: { service: { xtransit } } } = this;
     const { appId, agentId } = ctx.request.body;
