@@ -255,7 +255,11 @@ class RedisService extends Service {
         continue;
       }
 
-      list.push(filePath);
+      if (type === 'package') {
+        list.push(await this.checkModuleRisk(filePath));
+      } else {
+        list.push(filePath);
+      }
     }
 
     return list;
@@ -278,6 +282,20 @@ class RedisService extends Service {
     }).filter(log => log);
 
     return { count, errors };
+  }
+
+  async getModules(packagePath) {
+    const { ctx: { app: { redis } } } = this;
+    const key = this.composePackageKey(packagePath);
+    const { pkg, lock } = JSON.parse(await redis.get(key));
+    return {
+      pkg: JSON.parse(pkg),
+      lock: JSON.parse(lock),
+    };
+  }
+
+  async checkModuleRisk(packagePath) {
+    return packagePath;
   }
 }
 

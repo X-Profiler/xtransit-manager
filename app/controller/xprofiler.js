@@ -38,6 +38,32 @@ class XprofilerController extends Controller {
     ctx.body = { ok: true, data };
   }
 
+  async getModules() {
+    const { ctx, ctx: { service: { redis } } } = this;
+    const { appId, agentId, moduleFile } = ctx.request.body;
+
+    // check file
+    const files = await redis.getFiles(appId, agentId, 'package');
+    if (!files.includes(moduleFile)) {
+      ctx.body = { ok: false, message: `file <${moduleFile}> not exists on [${appId}::${agentId}]` };
+      return;
+    }
+
+    // get modules
+    const { pkg, lock } = await redis.getModules(moduleFile);
+    const { dependencies = {}, devDependencies = {} } = pkg;
+    const lockModule = {};
+    for (const mod of Object.keys(dependencies).concat(Object.keys(devDependencies))) {
+      const info = lock.dependencies[mod] || {};
+      lockModule[mod] = {
+        version: info.version,
+        resolved: info.resolved,
+      };
+    }
+
+    ctx.body = { ok: true, data: { dependencies, devDependencies, lockModule, file: moduleFile } };
+  }
+
   async getAgentOsInfo() {
     const { ctx, ctx: { service: { xtransit } } } = this;
     const { appId, agentId } = ctx.request.body;
