@@ -49,6 +49,8 @@ module.exports = appInfo => {
 
   config.packageStorage = 7;
 
+  config.packageQueueKey = 'XTRANSIT_PKG_QUEUE';
+
   config.packageAuditPrefix = 'XTRANSIT_PKG_AUDIT::';
 
   config.packageAuditStorage = 60 * 60;

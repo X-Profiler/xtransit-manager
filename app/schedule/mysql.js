@@ -14,6 +14,7 @@ class MysqlSubscription extends Subscription {
   async subscribe() {
     const { ctx: { service: { mysql } } } = this;
     await mysql.cleanOsHistory();
+    await mysql.cleanAlarmHistory();
     await mysql.cleanProcessHistory();
   }
 }

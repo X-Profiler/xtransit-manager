@@ -10,7 +10,7 @@ class XprofilerService extends Service {
       return;
     }
 
-    const { ctx: { service: { mysql, log: { system, helper: { gc, http } } } } } = this;
+    const { ctx: { service: { mysql, alarm, log: { system, helper: { gc, http } } } } } = this;
 
     const logMap = logs.reduce((map, { pid, key, value }) => {
       if (map[pid]) {
@@ -29,6 +29,7 @@ class XprofilerService extends Service {
       const tasks = [];
       log.statusMap = http.getStatusMap(log);
       tasks.push(mysql.saveXprofilerLog(appId, agentId, pid, log));
+      tasks.push(alarm.judgeMetrics(appId, agentId, Object.assign({}, log, { pid }), 'xprofiler_log'));
       await Promise.all(tasks);
     }, { concurrency: 2 });
   }

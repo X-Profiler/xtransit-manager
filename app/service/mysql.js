@@ -103,6 +103,13 @@ class MysqlService extends Service {
     return this.consoleQuery(sql, params);
   }
 
+  /* table strategies */
+  getStrategiesByAppIdAndContextType(appId, contextType) {
+    const sql = 'SELECT * FROM strategies WHERE app = ? AND context = ? AND status = 1';
+    const params = [appId, contextType];
+    return this.consoleQuery(sql, params);
+  }
+
   /* save table ${log_table}_${DD} */
   getTable(tablePrefix, logTime) {
     return `${tablePrefix}${moment(logTime).format('DD')}`;
@@ -194,6 +201,11 @@ class MysqlService extends Service {
   async cleanOsHistory() {
     const { ctx: { app: { config } } } = this;
     await this.cleanHistory('osinfo_', config.processHistoryStorage);
+  }
+
+  async cleanAlarmHistory() {
+    const { ctx: { app: { config } } } = this;
+    await this.cleanHistory('alarm_', config.processHistoryStorage);
   }
 }
 

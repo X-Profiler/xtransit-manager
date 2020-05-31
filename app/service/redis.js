@@ -231,12 +231,13 @@ class RedisService extends Service {
     await redis.expireat(key, timestamp);
   }
 
-  async savePackage(packagePath, pkg, lock) {
-    const { ctx: { app: { redis, config: { packageStorage } } } } = this;
+  async savePackage(appId, agentId, packagePath, pkg, lock) {
+    const { ctx: { app: { redis, config: { packageStorage, packageQueueKey } } } } = this;
 
     // save package
     const key = this.composePackageKey(packagePath);
     await redis.setex(key, packageStorage * 24 * 60 * 60, JSON.stringify({ pkg, lock }));
+    await redis.rpush(packageQueueKey, JSON.stringify({ appId, agentId, packagePath }));
   }
 
   async getFiles(appId, agentId, type) {
