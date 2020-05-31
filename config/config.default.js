@@ -49,7 +49,13 @@ module.exports = appInfo => {
 
   config.packageStorage = 7;
 
+  config.packageAuditPrefix = 'XTRANSIT_PKG_AUDIT::';
+
+  config.packageAuditStorage = 60 * 60;
+
   config.processHistoryStorage = 7;
+
+  config.npmRegistry = 'https://registry.npmjs.org';
 
   const userConfig = {};
 

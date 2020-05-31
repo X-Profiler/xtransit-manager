@@ -256,7 +256,7 @@ class RedisService extends Service {
       }
 
       if (type === 'package') {
-        list.push(await this.checkModuleRisk(filePath));
+        list.push(await this.checkModuleRisk(appId, agentId, filePath));
       } else {
         list.push(filePath);
       }
@@ -285,17 +285,58 @@ class RedisService extends Service {
   }
 
   async getModules(packagePath) {
-    const { ctx: { app: { redis } } } = this;
-    const key = this.composePackageKey(packagePath);
-    const { pkg, lock } = JSON.parse(await redis.get(key));
-    return {
-      pkg: JSON.parse(pkg),
-      lock: JSON.parse(lock),
-    };
+    const { ctx, ctx: { app: { redis } } } = this;
+    try {
+      const key = this.composePackageKey(packagePath);
+      const { pkg, lock } = JSON.parse(await redis.get(key));
+      return {
+        pkg: JSON.parse(pkg),
+        lock: JSON.parse(lock),
+      };
+    } catch (err) {
+      ctx.logger.error(`getModules falied: ${err}`);
+      return {};
+    }
   }
 
-  async checkModuleRisk(packagePath) {
-    return packagePath;
+  async checkModuleRisk(appId, agentId, packagePath) {
+    const { ctx: { app: { redis, config: { packageAuditPrefix, packageAuditStorage } }, service: { audit } } } = this;
+    const result = {
+      filePath: packagePath,
+    };
+
+    // 1. check cache
+    const auditKey = `${packageAuditPrefix}${appId}::${agentId}::${packagePath}`;
+    const auditInfo = await redis.get(auditKey);
+    if (auditInfo) {
+      const { risk, riskModules } = JSON.parse(auditInfo);
+      result.risk = risk;
+      result.riskModules = riskModules;
+      return result;
+    }
+
+    // 2. get audit
+    const { pkg, lock } = await this.getModules(packagePath);
+    if (!pkg || !lock) {
+      return result;
+    }
+
+    const auditDetail = await audit.getAudit(pkg, lock);
+    if (!auditDetail) {
+      return result;
+    }
+
+    result.risk = {
+      ...auditDetail.metadata,
+      scanTime: moment().format('YYYY-MM-DD HH:mm:ss'),
+    };
+    result.riskModules = audit.getRiskModules(auditDetail);
+
+    await redis.setex(auditKey, packageAuditStorage, JSON.stringify({
+      risk: result.risk,
+      riskModules: result.riskModules,
+    }));
+    return result;
   }
 }
 

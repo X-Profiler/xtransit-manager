@@ -43,7 +43,7 @@ class XprofilerController extends Controller {
     const { appId, agentId, moduleFile } = ctx.request.body;
 
     // check file
-    const files = await redis.getFiles(appId, agentId, 'package');
+    const files = (await redis.getFiles(appId, agentId, 'package')).map(({ filePath }) => filePath);
     if (!files.includes(moduleFile)) {
       ctx.body = { ok: false, message: `file <${moduleFile}> not exists on [${appId}::${agentId}]` };
       return;
