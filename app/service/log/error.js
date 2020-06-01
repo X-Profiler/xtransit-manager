@@ -11,7 +11,14 @@ class ErrorService extends Service {
       tasks.push(redis.updateLogs(appId, agentId, errorLogFile, 'error'));
       if (Array.isArray(errorLogs) && errorLogs.length) {
         tasks.push(redis.saveErrorLogs(errorLogFile, errorLogs));
-        tasks.push(alarm.judgeMetrics(appId, agentId, errorLogs, 'error_log'));
+        const context = errorLogs.map(log => {
+          return Object.assign({
+            agent_id: agentId,
+            error_type: log.type,
+            log_path: errorLogFile,
+          }, log);
+        });
+        tasks.push(alarm.judgeMetrics(appId, agentId, context, 'error_log'));
       }
       await Promise.all(tasks);
     }

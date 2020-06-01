@@ -173,6 +173,15 @@ class MysqlService extends Service {
     return this.logsQuery(sql, params);
   }
 
+  saveAlarmLog(strategyId, agentId, message, pid = null) {
+    message = message.length > 250 ? message.slice(0, 245) + '...' : message;
+    const table = this.getTable('alarm_', Date.now());
+    const sql = `INSERT INTO ${table} (strategy, agent, message, pid) `
+      + 'VALUES (?, ?, ?, ?)';
+    const params = [strategyId, agentId, message, pid];
+    return this.logsQuery(sql, params);
+  }
+
   /* clean table ${log_table}_${DD} */
   async cleanHistory(prefix, expired) {
     const remains = [];

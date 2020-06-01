@@ -29,7 +29,13 @@ class XprofilerService extends Service {
       const tasks = [];
       log.statusMap = http.getStatusMap(log);
       tasks.push(mysql.saveXprofilerLog(appId, agentId, pid, log));
-      tasks.push(alarm.judgeMetrics(appId, agentId, Object.assign({}, log, { pid }), 'xprofiler_log'));
+
+      // check rule
+      const context = Object.assign({
+        pid,
+        gc_60: Number((log.gc_time_during_last_record / (60 * 1000) * 100).toFixed(2)),
+      }, log);
+      tasks.push(alarm.judgeMetrics(appId, agentId, context, 'xprofiler_log'));
       await Promise.all(tasks);
     }, { concurrency: 2 });
   }

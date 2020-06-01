@@ -240,7 +240,7 @@ class RedisService extends Service {
     await redis.rpush(packageQueueKey, JSON.stringify({ appId, agentId, packagePath }));
   }
 
-  async getFiles(appId, agentId, type) {
+  async getFiles(appId, agentId, type, options = {}) {
     const { ctx: { app: { redis } } } = this;
     const key = this.composeLogsKey(appId, agentId);
     const files = await redis.hgetall(key);
@@ -257,7 +257,7 @@ class RedisService extends Service {
       }
 
       if (type === 'package') {
-        list.push(await this.checkModuleRisk(appId, agentId, filePath));
+        list.push(await this.checkModuleRisk(appId, agentId, filePath, options));
       } else {
         list.push(filePath);
       }
@@ -300,20 +300,24 @@ class RedisService extends Service {
     }
   }
 
-  async checkModuleRisk(appId, agentId, packagePath) {
+  async checkModuleRisk(appId, agentId, packagePath, { forceCache = false, fromCache = false }) {
     const { ctx: { app: { redis, config: { packageAuditPrefix, packageAuditStorage } }, service: { audit } } } = this;
-    const result = {
-      filePath: packagePath,
-    };
+    const result = { filePath: packagePath };
+    const auditKey = `${packageAuditPrefix}${appId}::${agentId}::${packagePath}`;
 
     // 1. check cache
-    const auditKey = `${packageAuditPrefix}${appId}::${agentId}::${packagePath}`;
-    const auditInfo = await redis.get(auditKey);
-    if (auditInfo) {
-      const { risk, riskModules } = JSON.parse(auditInfo);
-      result.risk = risk;
-      result.riskModules = riskModules;
-      return result;
+    if (!forceCache) {
+      const auditInfo = await redis.get(auditKey);
+      if (auditInfo) {
+        const { risk, riskModules } = JSON.parse(auditInfo);
+        result.risk = risk;
+        result.riskModules = riskModules;
+        return result;
+      }
+
+      if (fromCache) {
+        return result;
+      }
     }
 
     // 2. get audit

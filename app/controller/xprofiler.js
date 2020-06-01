@@ -14,9 +14,9 @@ class XprofilerController extends Controller {
 
   async getFiles() {
     const { ctx, ctx: { service: { redis } } } = this;
-    const { appId, agentId, type } = ctx.request.body;
+    const { appId, agentId, type, options } = ctx.request.body;
 
-    const files = await redis.getFiles(appId, agentId, type);
+    const files = await redis.getFiles(appId, agentId, type, options);
 
     ctx.body = { ok: true, data: { files } };
   }
@@ -40,10 +40,10 @@ class XprofilerController extends Controller {
 
   async getModules() {
     const { ctx, ctx: { service: { redis } } } = this;
-    const { appId, agentId, moduleFile } = ctx.request.body;
+    const { appId, agentId, moduleFile, options } = ctx.request.body;
 
     // check file
-    const files = (await redis.getFiles(appId, agentId, 'package')).map(({ filePath }) => filePath);
+    const files = (await redis.getFiles(appId, agentId, 'package', options)).map(({ filePath }) => filePath);
     if (!files.includes(moduleFile)) {
       ctx.body = { ok: false, message: `file <${moduleFile}> not exists on [${appId}::${agentId}]` };
       return;

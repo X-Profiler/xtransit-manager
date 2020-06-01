@@ -53,7 +53,7 @@ module.exports = appInfo => {
 
   config.packageAuditPrefix = 'XTRANSIT_PKG_AUDIT::';
 
-  config.packageAuditStorage = 60 * 60;
+  config.packageAuditStorage = 90 * 60;
 
   config.processHistoryStorage = 7;
 
