@@ -29,6 +29,10 @@ module.exports = appInfo => {
     secret: 'easy-monitor::xprofiler',
   };
 
+  config.development = {
+    watchDirs: ['lib'],
+  };
+
   config.httpTimeout = 15000;
 
   config.appsKey = 'XTRANSIT_APP';
@@ -58,6 +62,12 @@ module.exports = appInfo => {
   config.processHistoryStorage = 7;
 
   config.npmRegistry = 'https://registry.npmjs.org';
+
+  config.debounceFlagPrefix = 'XTRANSIT_DEBOUNCE_FLAG::';
+
+  config.debounceListPrefix = 'XTRANSIT_DEBOUNCE_LIST::';
+
+  config.debounceWait = 5 * 60;
 
   const userConfig = {};
 
@@ -93,6 +103,8 @@ module.exports = appInfo => {
       db: 0,
     },
   };
+
+  userConfig.xprofilerConsole = '';
 
   return {
     ...config,
