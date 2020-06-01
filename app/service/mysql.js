@@ -110,6 +110,23 @@ class MysqlService extends Service {
     return this.consoleQuery(sql, params);
   }
 
+  /* table  <contacts> */
+  getContactsByStrategyId(strategyId) {
+    const sql = 'SELECT * FROM contacts WHERE strategy = ?';
+    const params = [strategyId];
+    return this.consoleQuery(sql, params);
+  }
+
+  /* table <user> */
+  getUserByUserIds(userIds) {
+    if (!userIds.length) {
+      return [];
+    }
+    const sql = `SELECT * FROM user WHERE id in (${userIds.map(() => '?').join(',')})`;
+    const params = [...userIds];
+    return this.consoleQuery(sql, params);
+  }
+
   /* save table ${log_table}_${DD} */
   getTable(tablePrefix, logTime) {
     return `${tablePrefix}${moment(logTime).format('DD')}`;

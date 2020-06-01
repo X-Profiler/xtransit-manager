@@ -1,0 +1,20 @@
+<html>
+
+<head>
+  <title>Easy-Monitor 性能监控</title>
+</head>
+
+<body>
+  <p>您的应用 <a href="<%= appLink %>"><%= appInfo %></a>
+    在实例 <strong><%= agentId %></strong> 于 <strong><%= periodDesc %></strong>
+    发生 <strong><%= list.length %></strong> 条告警:</p>
+  <ul style="margin-left: 20px;margin-top: 5px;">
+    <% for(let i=0; i < list.length; i++) { %>
+    <li> <%= list[i].timestamp %>: <%= list[i].message %></li>
+    <% } %>
+  </ul>
+  <p style="margin-top: 10px;">点击 <a href="<%= detailLink %>">控制台</a>
+    查看详细信息</p>
+</body>
+
+</html>

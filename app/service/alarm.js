@@ -34,7 +34,7 @@ class AlarmService extends Service {
     return detailPath;
   }
 
-  async debounceMessage(appId, agentId, strategy, context, message, type) {
+  async debounceMessage(appId, agentId, context, strategy, message, type) {
     const { ctx: {
       app: { redis, config: { debounceFlagPrefix, debounceListPrefix, debounceWait, xprofilerConsole } },
     } } = this;
@@ -76,8 +76,45 @@ class AlarmService extends Service {
     await redis.expire(debounceList, debounceWait + 30);
   }
 
+  async prepareSend(appId, agentId, context, strategy, message, type) {
+    const { ctx, ctx: { service: { mysql }, app: { redis, config: { messageLimitPrefix, messageLimit } } } } = this;
+    const { id: strategyId } = strategy;
+
+    // get contacts
+    const contacts = await mysql.getContactsByStrategyId(strategyId);
+    if (!contacts.length) {
+      return;
+    }
+
+    // debounce message
+    const result = await this.debounceMessage(appId, agentId, context, strategy, message, type);
+    if (!result) {
+      return;
+    }
+
+    // get message limit
+    const limitCount = messageLimit[type];
+    if (!limitCount) {
+      ctx.logger.error(`type ${type} not configure message limit`);
+      return;
+    }
+
+    // check message limit
+    const today = moment().format('YYYYMMDD');
+    const messageLimitKey = `${messageLimitPrefix}::${today}::${appId}::${strategyId}::${type}`;
+    const sended = await redis.incr(messageLimitKey);
+    if (sended > limitCount) {
+      ctx.logger.error(`${messageLimitKey} exceeded (${sended - 1} / ${limitCount})`);
+      return;
+    }
+
+    const expired = parseInt((moment().endOf('day') - moment()) / 1000) + 60;
+    await redis.expire(messageLimitKey, expired);
+    return { contacts, ...result };
+  }
+
   async judgeMetric(appId, agentId, context, strategy) {
-    const { ctx: { service: { mysql, dingtalk } } } = this;
+    const { ctx: { service: { mysql, dingtalk, mailer } } } = this;
     const { id: strategyId, expression, content, push } = strategy;
 
     // check need alarm
@@ -120,10 +157,11 @@ class AlarmService extends Service {
       case 'p3':
         tasks.push(mysql.saveAlarmLog(strategyId, agentId, message, context.pid));
         tasks.push(dingtalk.sendMessage(appId, agentId, context, strategy, message));
+        tasks.push(mailer.sendMessage(appId, agentId, context, strategy, message));
         break;
       case 'p4':
         tasks.push(mysql.saveAlarmLog(strategyId, agentId, message, context.pid));
-        tasks.push(dingtalk.sendMessage(appId, agentId, context, strategy, message));
+        // tasks.push(dingtalk.sendMessage(appId, agentId, context, strategy, message));
         break;
       default:
         break;

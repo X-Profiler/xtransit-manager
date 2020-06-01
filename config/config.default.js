@@ -33,6 +33,10 @@ module.exports = appInfo => {
     watchDirs: ['lib'],
   };
 
+  config.view = {
+    mapping: { '.html': 'ejs' },
+  };
+
   config.httpTimeout = 15000;
 
   config.appsKey = 'XTRANSIT_APP';
@@ -69,6 +73,12 @@ module.exports = appInfo => {
 
   config.debounceWait = 5 * 60;
 
+  config.messageLimitPrefix = 'XTRANSIT_MESSAGE_LIMIT::';
+
+  config.messageLimit = {
+    mailer: 20,
+  };
+
   const userConfig = {};
 
   // mysql
@@ -101,6 +111,17 @@ module.exports = appInfo => {
       host: '',
       password: '',
       db: 0,
+    },
+  };
+
+  // mailer
+  userConfig.mailer = {
+    host: '',
+    port: 25,
+    secure: false,
+    auth: {
+      user: '',
+      pass: '',
     },
   };
 

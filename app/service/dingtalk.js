@@ -10,7 +10,7 @@ class DingtalkService extends Service {
     }
 
     const { ctx: { app: { dingtalk }, service: { mysql, alarm } } } = this;
-    const result = await alarm.debounceMessage(appId, agentId, strategy, context, message, 'dingtalk');
+    const result = await alarm.debounceMessage(appId, agentId, context, strategy, message, 'dingtalk');
     if (!result) {
       return;
     }
