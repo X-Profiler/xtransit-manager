@@ -37,6 +37,11 @@ module.exports = appInfo => {
     mapping: { '.html': 'ejs' },
   };
 
+  config.bodyParser = {
+    jsonLimit: '10mb',
+    formLimit: '10mb',
+  };
+
   config.httpTimeout = 15000;
 
   config.appsKey = 'XTRANSIT_APP';
