@@ -104,7 +104,7 @@ class AlarmService extends Service {
     const messageLimitKey = `${messageLimitPrefix}::${today}::${appId}::${strategyId}::${type}`;
     const sended = await redis.incr(messageLimitKey);
     if (sended > limitCount) {
-      ctx.logger.error(`${messageLimitKey} exceeded (${sended - 1} / ${limitCount})`);
+      ctx.logger.error(`${messageLimitKey} exceeded (${limitCount} / ${limitCount})`);
       return;
     }
 

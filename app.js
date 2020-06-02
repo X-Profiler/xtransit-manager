@@ -14,14 +14,17 @@ class AppBootHook {
       if (pkgInfo) {
         this.app.logger.info(`start handle package: ${pkgInfo}...`);
         try {
-          const { appId, agentId, packagePath } = JSON.parse(pkgInfo);
-          const result = await rdis.checkModuleRisk(appId, agentId, packagePath, { forceCache: true });
-          if (result && result.risk) {
-            const context = Object.assign({}, result.risk, result.risk.vulnerabilities);
-            await alarm.judgeMetrics(appId, agentId, context, 'xtransit_notification');
-            this.app.logger.info(`package: ${pkgInfo} audit saved.`);
-          } else {
-            throw new Error(`get package audit failed`);
+          const { appId, agentId, packagePath, timestamp } = JSON.parse(pkgInfo);
+          // check timestamp
+          if (Date.now() - timestamp < 60 * 60 * 1000) {
+            const result = await rdis.checkModuleRisk(appId, agentId, packagePath, { forceCache: true });
+            if (result && result.risk) {
+              const context = Object.assign({}, result.risk, result.risk.vulnerabilities);
+              await alarm.judgeMetrics(appId, agentId, context, 'xtransit_notification');
+              this.app.logger.info(`package: ${pkgInfo} audit saved.`);
+            } else {
+              throw new Error(`get package audit failed`);
+            }
           }
         } catch (err) {
           this.app.logger.error(`handle package ${pkgInfo} failed: ${err.message}`);
@@ -29,8 +32,14 @@ class AppBootHook {
         }
       }
 
-      // sleep for 10s
-      await new Promise(resolve => setTimeout(resolve, 10 * 1000));
+      const left = await redis.llen(packageQueueKey);
+      if (left) {
+        // sleep for 1s if queue is not empty
+        await new Promise(resolve => setTimeout(resolve, 1 * 1000));
+      } else {
+        // sleep for 10s if queue is empty
+        await new Promise(resolve => setTimeout(resolve, 10 * 1000));
+      }
     }
   }
 }

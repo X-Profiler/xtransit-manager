@@ -237,7 +237,7 @@ class RedisService extends Service {
     // save package
     const key = this.composePackageKey(packagePath);
     await redis.setex(key, packageStorage * 24 * 60 * 60, JSON.stringify({ pkg, lock }));
-    await redis.rpush(packageQueueKey, JSON.stringify({ appId, agentId, packagePath }));
+    await redis.rpush(packageQueueKey, JSON.stringify({ appId, agentId, packagePath, timestamp: Date.now() }));
   }
 
   async getFiles(appId, agentId, type, options = {}) {
