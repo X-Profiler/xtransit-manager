@@ -28,7 +28,7 @@ class MailerService extends Service {
     // send email
     mailer.sendMail({
       from: auth.user,
-      to: users.map(user => user.name).join(','),
+      to: users.map(user => user.mail).join(','),
       subject: 'Easy-Monitor 性能监控',
       // text: content,
       html,
