@@ -32,7 +32,7 @@
     "node": ">=10.0.0"
   },
   "scripts": {
-    "start": "egg-scripts start --daemon --title=egg-server-xtransit-manager",
+    "start": "egg-scripts start --daemon --title=egg-server-xtransit-manager --port=7543",
     "stop": "egg-scripts stop --title=egg-server-xtransit-manager",
     "dev": "egg-bin dev --port=8543",
     "debug": "egg-bin debug",
