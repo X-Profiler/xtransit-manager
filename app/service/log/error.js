@@ -13,7 +13,7 @@ class ErrorService extends Service {
         tasks.push(redis.saveErrorLogs(errorLogFile, errorLogs));
         const context = errorLogs.map(log => {
           return Object.assign({
-            agent_id: agentId,
+            agent: agentId,
             error_type: log.type,
             log_path: errorLogFile,
           }, log);
