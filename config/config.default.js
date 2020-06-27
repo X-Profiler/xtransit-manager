@@ -68,7 +68,7 @@ module.exports = appInfo => {
 
   config.packageAuditStorage = 90 * 60;
 
-  config.processHistoryStorage = 7;
+  config.processHistoryStorage = 8;
 
   config.npmRegistry = 'https://registry.npmjs.org';
 
