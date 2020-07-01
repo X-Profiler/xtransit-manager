@@ -13,6 +13,7 @@
     "egg-redis": "^2.4.0",
     "egg-scripts": "^2.11.0",
     "egg-view-ejs": "^2.0.1",
+    "egg-mysql": "^3.0.0",
     "moment": "^2.25.3",
     "nodemailer": "^6.4.8",
     "npm-registry-fetch": "^8.1.0",
@@ -24,7 +25,6 @@
     "egg-bin": "^4.11.0",
     "egg-ci": "^1.11.0",
     "egg-mock": "^3.21.0",
-    "egg-mysql": "^3.0.0",
     "eslint": "^5.13.0",
     "eslint-config-egg": "^7.1.0"
   },
