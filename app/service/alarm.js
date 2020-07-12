@@ -114,7 +114,7 @@ class AlarmService extends Service {
   }
 
   async judgeMetric(appId, agentId, context, strategy) {
-    const { ctx: { service: { mysql, dingtalk, mailer } } } = this;
+    const { ctx: { service: { mysql, dingtalk, qywx, mailer } } } = this;
     const { id: strategyId, expression, content, push } = strategy;
 
     // check need alarm
@@ -149,19 +149,23 @@ class AlarmService extends Service {
       case 'p1':
         tasks.push(mysql.saveAlarmLog(strategyId, agentId, message, context.pid));
         tasks.push(dingtalk.sendMessage(appId, agentId, context, strategy, message));
+        tasks.push(qywx.sendMessage(appId, agentId, context, strategy, message));
         break;
       case 'p2':
         tasks.push(mysql.saveAlarmLog(strategyId, agentId, message, context.pid));
         tasks.push(dingtalk.sendMessage(appId, agentId, context, strategy, message));
+        tasks.push(qywx.sendMessage(appId, agentId, context, strategy, message));
         break;
       case 'p3':
         tasks.push(mysql.saveAlarmLog(strategyId, agentId, message, context.pid));
-        tasks.push(dingtalk.sendMessage(appId, agentId, context, strategy, message));
         tasks.push(mailer.sendMessage(appId, agentId, context, strategy, message));
+        tasks.push(dingtalk.sendMessage(appId, agentId, context, strategy, message));
+        tasks.push(qywx.sendMessage(appId, agentId, context, strategy, message));
         break;
       case 'p4':
         tasks.push(mysql.saveAlarmLog(strategyId, agentId, message, context.pid));
         // tasks.push(dingtalk.sendMessage(appId, agentId, context, strategy, message));
+        // tasks.push(qywx.sendMessage(appId, agentId, context, strategy, message));
         break;
       default:
         break;

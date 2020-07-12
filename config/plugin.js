@@ -21,13 +21,18 @@ module.exports = {
   },
 
   // xprofiler plugin
+  xmailer: {
+    enable: true,
+    path: path.join(__dirname, '../lib/plugin/egg-xprofiler-mailer'),
+  },
+
   xdingtalk: {
     enable: true,
     path: path.join(__dirname, '../lib/plugin/egg-xprofiler-dingtalk'),
   },
 
-  xmailer: {
+  xqywx: {
     enable: true,
-    path: path.join(__dirname, '../lib/plugin/egg-xprofiler-mailer'),
-  },
+    path: path.join(__dirname, '../lib/plugin/egg-xprofiler-qywx'),
+  }
 };
