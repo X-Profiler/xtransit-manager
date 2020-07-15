@@ -23,7 +23,7 @@ class AppBootHook {
               await alarm.judgeMetrics(appId, agentId, context, 'xtransit_notification');
               this.app.logger.info(`package: ${pkgInfo} audit saved.`);
             } else {
-              throw new Error(`get package audit failed`);
+              this.app.logger.error(`${pkgInfo} has been expired.`);
             }
           }
         } catch (err) {
