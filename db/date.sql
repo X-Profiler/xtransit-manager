@@ -1,3 +1,5 @@
+-- xprofiler_logs
+
 -- daily process
 DROP TABLE IF EXISTS `process_01`;
 DROP TABLE IF EXISTS `process_02`;

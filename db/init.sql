@@ -1,4 +1,6 @@
--- template: `process-${MM-DD}`
+-- xprofiler_logs
+
+-- template: `process_${MM-DD}`
 DROP TABLE IF EXISTS `process`;
 CREATE TABLE `process`(
   `id` INT UNSIGNED AUTO_INCREMENT COMMENT 'unique auto increment id',
@@ -104,7 +106,7 @@ CREATE TABLE `process`(
   INDEX (`app`, `agent`, `pid`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT 'process info table';
 
--- template: `osinfo-${MM-DD}`
+-- template: `osinfo_${MM-DD}`
 DROP TABLE IF EXISTS `osinfo`;
 CREATE TABLE `osinfo`(
   `id` INT UNSIGNED AUTO_INCREMENT COMMENT 'unique auto increment id',
@@ -160,7 +162,7 @@ CREATE TABLE `osinfo`(
   INDEX (`app`, `agent`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT 'os info table';
 
--- template: `alarm-${MM-DD}`
+-- template: `alarm_${MM-DD}`
 DROP TABLE IF EXISTS `alarm`;
 CREATE TABLE `alarm`(
   `id` INT UNSIGNED AUTO_INCREMENT COMMENT 'unique auto increment id',
