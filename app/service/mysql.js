@@ -162,12 +162,7 @@ class MysqlService extends Service {
 
     const params = [appId, agentId, pid, time, version];
     for (const key of XPROFILER_KEY) {
-      if (key === 'log_time' && log.log_time) {
-        const log_time = moment(log.log_time).format('YYYY-MM-DD HH:mm:ss');
-        params.push(log_time);
-      } else {
-        params.push(log[key]);
-      }
+      params.push(log[key]);
     }
     params.push(JSON.stringify(statusMap) || '{}');
 
@@ -176,8 +171,7 @@ class MysqlService extends Service {
 
   saveSystemLog(appId, agentId, log, position) {
     this.checkLog(SYSTEM_KEY, log, appId, agentId, false);
-    const { version, total_memory, free_memory, disks, statusMap } = log;
-    const log_time = moment(log.log_time).format('YYYY-MM-DD HH:mm:ss');
+    const { log_time, version, total_memory, free_memory, disks, statusMap } = log;
     const table = this.getTable('osinfo_', log_time);
     const sql =
       `INSERT INTO ${table} (`

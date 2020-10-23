@@ -30,6 +30,8 @@ class XprofilerService extends Service {
     await pMap(Object.entries(logMap), async ([pid, log]) => {
       const tasks = [];
       log.statusMap = http.getStatusMap(log);
+      log.log_time = moment(log.log_time).format('YYYY-MM-DD HH:mm:ss');
+
       tasks.push(mysql.saveXprofilerLog(appId, agentId, pid, log));
 
       // check rule

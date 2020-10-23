@@ -1,5 +1,7 @@
 'use strict';
 
+const moment = require('moment');
+
 const Service = require('egg').Service;
 
 class SystemService extends Service {
@@ -54,6 +56,8 @@ class SystemService extends Service {
     const { ctx: { service: { mysql, alarm } } } = this;
 
     const tasks = [];
+
+    message.log_time = moment(message.log_time).format('YYYY-MM-DD HH:mm:ss');
     tasks.push(mysql.saveSystemLog(appId, agentId, message, position));
 
     // check rule
