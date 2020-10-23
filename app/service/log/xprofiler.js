@@ -1,6 +1,7 @@
 'use strict';
 
 const pMap = require('p-map');
+const moment = require('moment');
 const Service = require('egg').Service;
 
 class XprofilerService extends Service {
@@ -16,7 +17,8 @@ class XprofilerService extends Service {
       if (map[pid]) {
         map[pid][key] = value;
       } else {
-        map[pid] = { [key]: value, version: xprofiler_version, time: log_time };
+        const log_time_str = moment(log_time).format('YYYY-MM-DD HH:mm:ss');
+        map[pid] = { [key]: value, version: xprofiler_version, time: log_time_str };
       }
       return map;
     }, {});
