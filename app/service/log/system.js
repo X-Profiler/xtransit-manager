@@ -51,6 +51,8 @@ class SystemService extends Service {
   }
 
   async handle(appId, agentId, message, position = 0) {
+    this.ctx.app.formatLogTime(message);
+
     const { ctx: { service: { mysql, alarm } } } = this;
 
     const tasks = [];

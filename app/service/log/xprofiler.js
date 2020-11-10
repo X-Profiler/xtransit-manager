@@ -5,6 +5,8 @@ const Service = require('egg').Service;
 
 class XprofilerService extends Service {
   async handle(appId, agentId, message) {
+    this.ctx.app.formatLogTime(message);
+
     const { xprofiler_version, log_time, logs } = message;
     if (!Array.isArray(logs) || !logs.length) {
       return;

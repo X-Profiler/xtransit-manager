@@ -34,5 +34,5 @@ module.exports = {
   xqywx: {
     enable: true,
     path: path.join(__dirname, '../lib/plugin/egg-xprofiler-qywx'),
-  }
+  },
 };
