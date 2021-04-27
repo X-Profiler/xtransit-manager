@@ -114,7 +114,7 @@ class AlarmService extends Service {
   }
 
   async judgeMetric(appId, agentId, context, strategy) {
-    const { ctx: { service: { mysql, dingtalk, qywx, mailer } } } = this;
+    const { ctx, ctx: { service: { mysql, dingtalk, qywx, mailer } } } = this;
     const { id: strategyId, expression, content, push } = strategy;
 
     // check need alarm
@@ -123,7 +123,13 @@ class AlarmService extends Service {
     if (typeof compliedBoolex === 'function') {
       checked = compliedBoolex(context);
     } else {
-      const checkFn = boolex.compile(expression);
+      let checkFn;
+      try {
+        checkFn = boolex.compile(expression);
+      } catch (err) {
+        ctx.logger.error(`expression <${expression}> is illegal.`);
+        checkFn = () => { };
+      }
       compliedBoolexMap.set(expression, checkFn);
       checked = checkFn(context);
     }
