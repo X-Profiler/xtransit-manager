@@ -78,41 +78,43 @@ const SYSTEM_KEY = [
 
 class MysqlService extends Service {
   consoleQuery(sql, params = []) {
-    const { ctx: { app: { mysql } } } = this;
-    const xprofiler_console = mysql.get('xprofiler_console');
-    return xprofiler_console.query(sql, params);
+    return this.app.model.query(sql, { replacements: params, type: this.app.model.QueryTypes.SELECT });
+    // const { ctx: { app: { mysql } } } = this;
+    // const xprofiler_console = mysql.get('xprofiler_console');
+    // return xprofiler_console.query(sql, params);
   }
 
   logsQuery(sql, params = []) {
-    const { ctx: { app: { mysql } } } = this;
-    const xprofiler_logs = mysql.get('xprofiler_logs');
-    return xprofiler_logs.query(sql, params);
+    return this.app.model.query(sql, { replacements: params, type: this.app.model.QueryTypes.SELECT });
+    // const { ctx: { app: { mysql } } } = this;
+    // const xprofiler_logs = mysql.get('xprofiler_logs');
+    // return xprofiler_logs.query(sql, params);
   }
 
   /* table <apps> */
   getAppByAppId(appId) {
-    const sql = 'SELECT * FROM apps WHERE id = ?';
+    const sql = 'SELECT * FROM xprofiler_console.apps WHERE id = ?';
     const params = [appId];
     return this.consoleQuery(sql, params).then(data => data[0] || {});
   }
 
   /* table <files> */
   updateFileStatusByAppAgentFile(appId, agentId, filePath) {
-    const sql = 'UPDATE files SET status = ? WHERE app = ? AND agent = ? AND file = ? AND status = ?';
+    const sql = 'UPDATE xprofiler_console.files SET status = ? WHERE app = ? AND agent = ? AND file = ? AND status = ?';
     const params = [1, appId, agentId, filePath, 0];
     return this.consoleQuery(sql, params);
   }
 
   /* table strategies */
   getStrategiesByAppIdAndContextType(appId, contextType) {
-    const sql = 'SELECT * FROM strategies WHERE app = ? AND context = ? AND status = 1';
+    const sql = 'SELECT * FROM xprofiler_console.strategies WHERE app = ? AND context = ? AND status = 1';
     const params = [appId, contextType];
     return this.consoleQuery(sql, params);
   }
 
   /* table  <contacts> */
   getContactsByStrategyId(strategyId) {
-    const sql = 'SELECT * FROM contacts WHERE strategy = ?';
+    const sql = 'SELECT * FROM xprofiler_console.contacts WHERE strategy = ?';
     const params = [strategyId];
     return this.consoleQuery(sql, params);
   }
@@ -122,7 +124,7 @@ class MysqlService extends Service {
     if (!userIds.length) {
       return [];
     }
-    const sql = `SELECT * FROM user WHERE id in (${userIds.map(() => '?').join(',')})`;
+    const sql = `SELECT * FROM xprofiler_console.user WHERE id in (${userIds.map(() => '?').join(',')})`;
     const params = [...userIds];
     return this.consoleQuery(sql, params);
   }
@@ -151,7 +153,7 @@ class MysqlService extends Service {
     const { time, version, statusMap } = log;
     const table = this.getTable('process_', time);
     const sql =
-      `INSERT INTO ${table} (`
+      `INSERT INTO xprofiler_logs.${table} (`
       + 'app, agent, pid, log_time, version'
       + `, ${XPROFILER_KEY.join(', ')}, `
       + 'response_codes) '
@@ -174,7 +176,7 @@ class MysqlService extends Service {
     const { log_time, version, total_memory, free_memory, disks, statusMap } = log;
     const table = this.getTable('osinfo_', log_time);
     const sql =
-      `INSERT INTO ${table} (`
+      `INSERT INTO xprofiler_logs.${table} (`
       + 'app, agent, log_time, position, version, total_memory, free_memory, disks, response_codes'
       + `,  ${SYSTEM_KEY.join(', ')}) `
       + 'values ('
@@ -193,7 +195,7 @@ class MysqlService extends Service {
   saveAlarmLog(strategyId, agentId, message, pid = null) {
     message = message.length > 250 ? message.slice(0, 245) + '...' : message;
     const table = this.getTable('alarm_', Date.now());
-    const sql = `INSERT INTO ${table} (strategy, agent, message, pid) `
+    const sql = `INSERT INTO xprofiler_logs.${table} (strategy, agent, message, pid) `
       + 'VALUES (?, ?, ?, ?)';
     const params = [strategyId, agentId, message, pid];
     return this.logsQuery(sql, params);
@@ -214,8 +216,8 @@ class MysqlService extends Service {
       if (remains.includes(table)) {
         return;
       }
-      await this.logsQuery(`DELETE FROM ${table}`);
-      await this.logsQuery(`OPTIMIZE TABLE ${table}`);
+      await this.logsQuery(`DELETE FROM xprofiler_logs.${table}`);
+      // await this.logsQuery(`OPTIMIZE TABLE xprofiler_logs.${table}`);
     }, { concurrency: 2 });
   }
 

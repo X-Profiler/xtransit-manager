@@ -85,31 +85,16 @@ module.exports = appInfo => {
   };
 
   const userConfig = {};
-
-  // mysql
-  userConfig.mysql = {
-    app: true,
-    agent: false,
-    clients: {
-      xprofiler_console: {
-        host: '',
-        port: 3306,
-        user: '',
-        password: '',
-        database: 'xprofiler_console',
-      },
-      xprofiler_logs: {
-        host: '',
-        port: 3306,
-        user: '',
-        password: '',
-        database: 'xprofiler_logs',
-      },
-    },
+  // sequelize
+  config.sequelize = {
+    dialect: 'postgres',
+    database: '',
+    host: '',
+    port: 7092,
+    username: '',
+    password: '',
   };
-
-  // redis
-  userConfig.redis = {
+  config.redis = {
     client: {
       sentinels: null,
       port: 6379,
@@ -118,19 +103,52 @@ module.exports = appInfo => {
       db: 0,
     },
   };
+  config.xprofilerConsole = 'http://127.0.0.1:8443';
+  // // mysql
+  // userConfig.mysql = {
+  //   app: true,
+  //   agent: false,
+  //   clients: {
+  //     xprofiler_console: {
+  //       host: '',
+  //       port: 3306,
+  //       user: '',
+  //       password: '',
+  //       database: 'xprofiler_console',
+  //     },
+  //     xprofiler_logs: {
+  //       host: '',
+  //       port: 3306,
+  //       user: '',
+  //       password: '',
+  //       database: 'xprofiler_logs',
+  //     },
+  //   },
+  // };
+
+  // // redis
+  // userConfig.redis = {
+  //   client: {
+  //     sentinels: null,
+  //     port: 6379,
+  //     host: '',
+  //     password: '',
+  //     db: 0,
+  //   },
+  // };
 
   // mailer
-  userConfig.mailer = {
-    host: '',
-    port: 25,
-    secure: false,
-    auth: {
-      user: '',
-      pass: '',
-    },
-  };
+  // userConfig.mailer = {
+  //   host: '',
+  //   port: 25,
+  //   secure: false,
+  //   auth: {
+  //     user: '',
+  //     pass: '',
+  //   },
+  // };
 
-  userConfig.xprofilerConsole = '';
+  // userConfig.xprofilerConsole = '';
 
   return {
     ...config,
