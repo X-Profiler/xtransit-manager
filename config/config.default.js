@@ -86,6 +86,17 @@ module.exports = appInfo => {
 
   const userConfig = {};
 
+  // async config
+  userConfig.remoteConfig = {
+    async handler(/* agent */) {
+      // will override app.config
+      return {
+        // async config, eg:
+        // mysql: { clients:{ xprofiler_console: { port: 3390 } } }
+      };
+    },
+  };
+
   // mysql
   userConfig.mysql = {
     app: true,

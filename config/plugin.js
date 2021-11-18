@@ -20,6 +20,11 @@ module.exports = {
     package: 'egg-view-ejs',
   },
 
+  remoteConfig: {
+    enable: true,
+    package: 'egg-remote-config',
+  },
+
   // xprofiler plugin
   xmailer: {
     enable: true,
