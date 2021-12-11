@@ -287,12 +287,13 @@ class RedisService extends Service {
 
   async getModules(packagePath) {
     const { ctx, ctx: { app: { redis } } } = this;
+    const emptyTpl = JSON.stringify({ dependencies: {}, devDependencies: {} });
     try {
       const key = this.composePackageKey(packagePath);
       const { pkg, lock } = JSON.parse(await redis.get(key));
       return {
-        pkg: JSON.parse(pkg),
-        lock: JSON.parse(lock),
+        pkg: JSON.parse(pkg || emptyTpl),
+        lock: JSON.parse(lock || emptyTpl),
       };
     } catch (err) {
       ctx.logger.error(`getModules falied: ${err}`);
