@@ -4,7 +4,7 @@ const Service = require('egg').Service;
 
 class MailerService extends Service {
   async sendMessage(appId, agentId, context, strategy, message) {
-    const { ctx, ctx: { app: { mailer, config: { mailer: { auth } } }, service: { alarm, mysql } } } = this;
+    const { ctx, ctx: { app: { mailer, config }, service: { alarm, mysql } } } = this;
 
     const result = await alarm.prepareSend(appId, agentId, context, strategy, message, 'mailer');
     if (!result) {
@@ -24,6 +24,10 @@ class MailerService extends Service {
 
     };
     const html = await ctx.renderView('mailer', renderData);
+
+    if (!config.mailer || !config.mailer.host) {
+      return;
+    }
 
     // send email
     mailer.sendMail({
