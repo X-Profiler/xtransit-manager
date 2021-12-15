@@ -10,7 +10,7 @@ class ErrorService extends Service {
       const tasks = [];
       tasks.push(redis.updateLogs(appId, agentId, errorLogFile, 'error'));
       if (Array.isArray(errorLogs) && errorLogs.length) {
-        tasks.push(redis.saveErrorLogs(errorLogFile, errorLogs));
+        tasks.push(redis.saveErrorLogs(appId, agentId, errorLogFile, errorLogs));
         const context = errorLogs.map(log => {
           return Object.assign({
             agent: agentId,

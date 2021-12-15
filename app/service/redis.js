@@ -25,15 +25,15 @@ class RedisService extends Service {
     return filePath;
   }
 
-  composeErrorLogKey(errorLogPath) {
+  composeErrorLogKey(appId, agentId, errorLogPath) {
     const { ctx: { app: { config: { errorLogPrefix } } } } = this;
-    const key = `${errorLogPrefix}${errorLogPath}`;
+    const key = `${errorLogPrefix}${appId}::${agentId}::${errorLogPath}`;
     return key;
   }
 
-  composePackageKey(packagePath) {
+  composePackageKey(appId, packagePath) {
     const { ctx: { app: { config: { packagePrefix } } } } = this;
-    const key = `${packagePrefix}${packagePath}`;
+    const key = `${packagePrefix}${appId}::${packagePath}`;
     return key;
   }
 
@@ -78,14 +78,14 @@ class RedisService extends Service {
       let length = 0;
       await pMap(Object.entries(files), async ([filePath, fileInfo]) => {
         length++;
-        const { type, timestamp } = JSON.parse(fileInfo);
+        const { appId, agentId, type, timestamp } = JSON.parse(fileInfo);
         const expired = this.getExpiredTime(type);
         if (this.checkExpired(timestamp, expired)) {
           const field = this.composeLogsField(filePath);
           await redis.hdel(key, field);
           const fileKey = type === 'package'
-            ? this.composePackageKey(filePath)
-            : this.composeErrorLogKey(filePath);
+            ? this.composePackageKey(appId, filePath)
+            : this.composeErrorLogKey(appId, agentId, filePath);
           await redis.del(fileKey);
           length--;
         }
@@ -213,15 +213,15 @@ class RedisService extends Service {
     const key = this.composeLogsKey(appId, agentId);
     await redis.sadd(logsKey, key);
     const field = this.composeLogsField(logFile);
-    const value = JSON.stringify({ type, timestamp: Date.now() });
+    const value = JSON.stringify({ appId, agentId, type, timestamp: Date.now() });
     await redis.hset(key, field, value);
   }
 
-  async saveErrorLogs(errorLogPath, errorLogs) {
+  async saveErrorLogs(appId, agentId, errorLogPath, errorLogs) {
     const { ctx: { app: { redis, config: { errorLogLimit, errorLogStorage } } } } = this;
 
     // save error logs
-    const key = this.composeErrorLogKey(errorLogPath);
+    const key = this.composeErrorLogKey(appId, agentId, errorLogPath);
     await redis.lpush(key, ...errorLogs.map(log => JSON.stringify(log)));
     await redis.ltrim(key, 0, errorLogLimit - 1);
 
@@ -235,7 +235,7 @@ class RedisService extends Service {
     const { ctx: { app: { redis, config: { packageStorage, packageQueueKey } } } } = this;
 
     // save package
-    const key = this.composePackageKey(packagePath);
+    const key = this.composePackageKey(appId, packagePath);
     await redis.setex(key, packageStorage * 24 * 60 * 60, JSON.stringify({ pkg, lock }));
     await redis.rpush(packageQueueKey, JSON.stringify({ appId, agentId, packagePath, timestamp: Date.now() }));
   }
@@ -266,9 +266,9 @@ class RedisService extends Service {
     return list;
   }
 
-  async getErrors(errorLogPath, currentPage, pageSize) {
+  async getErrors(appId, agentId, errorLogPath, currentPage, pageSize) {
     const { ctx: { app: { redis } } } = this;
-    const key = this.composeErrorLogKey(errorLogPath);
+    const key = this.composeErrorLogKey(appId, agentId, errorLogPath);
     const count = await redis.llen(key);
     const start = (currentPage - 1) * pageSize;
     const stop = currentPage * pageSize - 1;
@@ -285,11 +285,11 @@ class RedisService extends Service {
     return { count, errors };
   }
 
-  async getModules(packagePath) {
+  async getModules(appId, packagePath) {
     const { ctx, ctx: { app: { redis } } } = this;
     const emptyTpl = JSON.stringify({ dependencies: {}, devDependencies: {} });
     try {
-      const key = this.composePackageKey(packagePath);
+      const key = this.composePackageKey(appId, packagePath);
       const { pkg, lock } = JSON.parse(await redis.get(key));
       return {
         pkg: JSON.parse(pkg || emptyTpl),
@@ -322,7 +322,7 @@ class RedisService extends Service {
     }
 
     // 2. get audit
-    const { pkg, lock } = await this.getModules(packagePath);
+    const { pkg, lock } = await this.getModules(appId, packagePath);
     if (!pkg || !lock) {
       return result;
     }

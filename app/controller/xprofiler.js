@@ -33,7 +33,7 @@ class XprofilerController extends Controller {
     }
 
     // get errors
-    const data = await redis.getErrors(errorFile, currentPage, pageSize);
+    const data = await redis.getErrors(appId, agentId, errorFile, currentPage, pageSize);
 
     ctx.body = { ok: true, data };
   }
@@ -50,7 +50,7 @@ class XprofilerController extends Controller {
     }
 
     // get modules
-    const { pkg, lock } = await redis.getModules(moduleFile);
+    const { pkg, lock } = await redis.getModules(appId, moduleFile);
     const { dependencies = {}, devDependencies = {} } = pkg;
     const lockModule = {};
     for (const mod of Object.keys(dependencies).concat(Object.keys(devDependencies))) {
