@@ -103,6 +103,15 @@ class MysqlService extends Service {
     return this.consoleQuery(sql, params);
   }
 
+  /* table <coredumps> */
+  addCoreFile(appId, agentId, corePath, executableInfo) {
+    const systemUser = 999999;
+    const sql = 'INSERT INTO coredumps (app, agent, file, node, user, file_status, file_storage, node_status, node_storage) '
+      + 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+    const params = [appId, agentId, corePath, executableInfo, systemUser, 1, '', 1, ''];
+    return this.consoleQuery(sql, params);
+  }
+
   /* table strategies */
   getStrategiesByAppIdAndContextType(appId, contextType) {
     const sql = 'SELECT * FROM strategies WHERE app = ? AND context = ? AND status = 1';

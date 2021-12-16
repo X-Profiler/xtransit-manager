@@ -31,7 +31,7 @@ class XtransitController extends Controller {
   }
 
   async handleLog() {
-    const { ctx, ctx: { service: { log: { xprofiler, system, error, package: pkg } } } } = this;
+    const { ctx, ctx: { service: { log: { xprofiler, system, error, package: pkg, core } } } } = this;
     const { appId, agentId, log: { type, data } } = ctx.request.body;
 
     switch (type) {
@@ -46,6 +46,9 @@ class XtransitController extends Controller {
         break;
       case 'package':
         await pkg.handle(appId, agentId, data);
+        break;
+      case 'core_files':
+        await core.handle(appId, agentId, data);
         break;
       default:
         break;
