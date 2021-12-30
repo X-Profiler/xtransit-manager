@@ -22,8 +22,12 @@ class XtransitController extends Controller {
   }
 
   async removeClient() {
-    const { ctx, ctx: { service: { redis } } } = this;
+    const { ctx, ctx: { service: { redis, alarm } } } = this;
     const { appId, agentId, clientId } = ctx.request.body;
+
+    // alarm instance offline
+    const context = { appId, agentId, clientId, agentOffline: true };
+    await alarm.judgeMetrics(appId, agentId, context, 'xtransit_notification');
 
     await redis.removeClient(appId, agentId, clientId);
 
