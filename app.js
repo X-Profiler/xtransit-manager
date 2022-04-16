@@ -22,9 +22,9 @@ class AppBootHook {
               const context = Object.assign({}, result.risk, result.risk.vulnerabilities);
               await alarm.judgeMetrics(appId, agentId, context, 'xtransit_notification');
               this.app.logger.info(`package: ${pkgInfo} audit saved.`);
-            } else {
-              this.app.logger.error(`${pkgInfo} has been expired.`);
             }
+          } else {
+            this.app.logger.error(`${pkgInfo} has been expired.`);
           }
         } catch (err) {
           this.app.logger.error(`handle package ${pkgInfo} failed: ${err.message}`);
