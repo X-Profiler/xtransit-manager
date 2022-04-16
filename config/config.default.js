@@ -84,6 +84,8 @@ module.exports = appInfo => {
     mailer: 20,
   };
 
+  config.mysqlOnceCleanLine = 200000;
+
   const userConfig = {};
 
   // async config

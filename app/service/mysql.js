@@ -209,6 +209,28 @@ class MysqlService extends Service {
   }
 
   /* clean table ${log_table}_${DD} */
+  getTableTotalLines(table, key) {
+    const sql = `SELECT COUNT(?) as count FROM ${table}`;
+    const params = [key];
+    return this.logsQuery(sql, params).then(data => data[0] || { count: 0 });
+  }
+
+  async cleanTable(table) {
+    const { app, app: { config: { mysqlOnceCleanLine } } } = this;
+    const prefix = 'xtransit-manager-mysql';
+    const logger = app.getLogger('scheduleLogger');
+    let { count } = await this.getTableTotalLines(table, 'id');
+    logger.info(`[${prefix}] start cleaning table ${table}: ${count}.`);
+    const start = Date.now();
+    while (count > 0) {
+      logger.info(`[${prefix}] clean ${table} left ${count}.`);
+      await this.logsQuery(`DELETE FROM ${table} LIMIT ${mysqlOnceCleanLine}`);
+      await this.logsQuery(`OPTIMIZE TABLE ${table}`);
+      count -= mysqlOnceCleanLine;
+    }
+    logger.info(`[${prefix}] clean table ${table} succeed, cost ${Date.now() - start}ms.`);
+  }
+
   async cleanHistory(prefix, expired) {
     const remains = [];
     const now = Date.now();
@@ -223,9 +245,8 @@ class MysqlService extends Service {
       if (remains.includes(table)) {
         return;
       }
-      await this.logsQuery(`DELETE FROM ${table}`);
-      await this.logsQuery(`OPTIMIZE TABLE ${table}`);
-    }, { concurrency: 2 });
+      await this.cleanTable(table);
+    }, { concurrency: 1 });
   }
 
   async cleanProcessHistory() {
