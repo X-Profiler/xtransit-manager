@@ -5,7 +5,7 @@ const Subscription = require('egg').Subscription;
 class RedisSubscription extends Subscription {
   static get schedule() {
     return {
-      cron: '0 0 0 * * *',
+      cron: '0 0 3 * * *',
       type: 'worker',
       immediate: true,
     };
