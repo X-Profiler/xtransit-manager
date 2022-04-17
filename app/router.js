@@ -13,6 +13,7 @@ module.exports = app => {
   } = app.middleware.params({}, app);
 
   // xprofiler-console
+  router.post('/xprofiler/client', checkSign, checkParams(['appId']), 'xprofiler.getClient');
   router.post('/xprofiler/clients', checkSign, checkParams(['appId']), 'xprofiler.getClients');
   router.post('/xprofiler/files', checkSign, checkParams(['appId', 'agentId', 'type']), 'xprofiler.getFiles');
   router.post('/xprofiler/errors', checkSign, checkParams(['appId', 'agentId', 'errorFile', 'currentPage', 'pageSize']), 'xprofiler.getErrors');
