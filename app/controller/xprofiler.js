@@ -3,6 +3,15 @@
 const Controller = require('egg').Controller;
 
 class XprofilerController extends Controller {
+  async getClient() {
+    const { ctx, ctx: { service: { redis } } } = this;
+    const { appId, agentId } = ctx.request.body;
+
+    const client = await redis.getClient(appId, agentId);
+
+    ctx.body = { ok: true, data: { client } };
+  }
+
   async getClients() {
     const { ctx, ctx: { service: { redis } } } = this;
     const { appId } = ctx.request.body;
