@@ -12,10 +12,10 @@ CREATE TABLE `process`(
   `version` VARCHAR(50) NOT NULL COMMENT 'xprofiler version',
 
   -- cpu
-  `cpu_now` FLOAT(5,2) COMMENT 'current process cpu usage (0-100%)',
-  `cpu_15` FLOAT(5,2) COMMENT 'process cpu usage in last 15 sec (0-100%)',
-  `cpu_30` FLOAT(5,2) COMMENT 'process cpu usage in last 30 sec (0-100%)',
-  `cpu_60` FLOAT(5,2) COMMENT 'process cpu usage in last 60 sec (0-100%)',
+  `cpu_now` DECIMAL(5,2) COMMENT 'current process cpu usage (0-100%)',
+  `cpu_15` DECIMAL(5,2) COMMENT 'process cpu usage in last 15 sec (0-100%)',
+  `cpu_30` DECIMAL(5,2) COMMENT 'process cpu usage in last 30 sec (0-100%)',
+  `cpu_60` DECIMAL(5,2) COMMENT 'process cpu usage in last 60 sec (0-100%)',
 
   -- memory
   -- overview
@@ -98,7 +98,7 @@ CREATE TABLE `process`(
   `http_response_sent` INT UNSIGNED COMMENT 'http responeses sent in last 1 min',
   `http_request_timeout` INT UNSIGNED COMMENT 'timeout http requests in last 1 min',
   `http_patch_timeout` INT UNSIGNED COMMENT 'http patch timeout (s)',
-  `http_rt` DOUBLE COMMENT 'http average response time (ms)',
+  `http_rt` DECIMAL(5,2) COMMENT 'http average response time (ms)',
 
   `gm_modified` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'system modify timestamp',
   `gm_create` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT 'system create timestamp',
@@ -118,7 +118,7 @@ CREATE TABLE `osinfo`(
   `version` VARCHAR(50) DEFAULT '' COMMENT 'xprofiler version',
 
   -- cpu
-  `used_cpu` DOUBLE COMMENT 'cpu usage (0-100%)',
+  `used_cpu` DECIMAL(5,2) COMMENT 'cpu usage (0-100%)',
   `cpu_count` INT UNSIGNED COMMENT 'cpu count',
 
   -- mem
@@ -126,9 +126,9 @@ CREATE TABLE `osinfo`(
   `free_memory` BIGINT UNSIGNED COMMENT 'os free memory (byte)',
 
   -- load
-  `load1` DOUBLE COMMENT 'os load in last 1 min',
-  `load5` DOUBLE COMMENT 'os load in last 5 min',
-  `load15` DOUBLE COMMENT 'os load in last 15 min',
+  `load1` DECIMAL(5,2) COMMENT 'os load in last 1 min',
+  `load5` DECIMAL(5,2) COMMENT 'os load in last 5 min',
+  `load15` DECIMAL(5,2) COMMENT 'os load in last 15 min',
 
   -- disks
   `disks` VARCHAR(1024) COMMENT 'monitored disks directory and usage (0-100%)',
@@ -154,7 +154,7 @@ CREATE TABLE `osinfo`(
   `http_response_sent` INT UNSIGNED COMMENT 'http responeses sent in last 1 min',
   `http_request_timeout` INT UNSIGNED COMMENT 'timeout http requests in last 1 min',
   `http_patch_timeout` INT UNSIGNED COMMENT 'http patch timeout (s)',
-  `http_rt` DOUBLE COMMENT 'http average response time (ms)',
+  `http_rt` DECIMAL(5,2) COMMENT 'http average response time (ms)',
 
   `gm_modified` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'system modify timestamp',
   `gm_create` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT 'system create timestamp',
