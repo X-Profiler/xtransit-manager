@@ -3,8 +3,8 @@
 -- template: `process_${MM-DD}`
 DROP TABLE IF EXISTS `process`;
 CREATE TABLE `process`(
-  `id` BIGINT UNSIGNED AUTO_INCREMENT COMMENT 'unique auto increment id',
-  `app` BIGINT NOT NULL COMMENT 'app id',
+  `id` INT UNSIGNED AUTO_INCREMENT COMMENT 'unique auto increment id',
+  `app` INT NOT NULL COMMENT 'app id',
   `agent` VARCHAR(50) NOT NULL COMMENT 'agent name',
   `pid` INT NOT NULL COMMENT 'process id',
   `uptime` INT UNSIGNED COMMENT 'process uptime (sec)',
@@ -109,8 +109,8 @@ CREATE TABLE `process`(
 -- template: `osinfo_${MM-DD}`
 DROP TABLE IF EXISTS `osinfo`;
 CREATE TABLE `osinfo`(
-  `id` BIGINT UNSIGNED AUTO_INCREMENT COMMENT 'unique auto increment id',
-  `app` BIGINT NOT NULL COMMENT 'app id',
+  `id` INT UNSIGNED AUTO_INCREMENT COMMENT 'unique auto increment id',
+  `app` INT NOT NULL COMMENT 'app id',
   `agent` VARCHAR(50) NOT NULL COMMENT 'agent name',
   `uptime` INT UNSIGNED NOT NULL COMMENT 'system uptime',
   `log_time` DATETIME NOT NULL COMMENT 'system log created time on agent',
@@ -165,8 +165,8 @@ CREATE TABLE `osinfo`(
 -- template: `alarm_${MM-DD}`
 DROP TABLE IF EXISTS `alarm`;
 CREATE TABLE `alarm`(
-  `id` BIGINT UNSIGNED AUTO_INCREMENT COMMENT 'unique auto increment id',
-  `strategy` BIGINT UNSIGNED NOT NULL COMMENT 'strategy id',
+  `id` INT UNSIGNED AUTO_INCREMENT COMMENT 'unique auto increment id',
+  `strategy` INT UNSIGNED NOT NULL COMMENT 'strategy id',
   `agent` VARCHAR(50) NOT NULL COMMENT 'agent name',
   `message` VARCHAR(250) NOT NULL COMMENT 'alerm message',
   `pid` INT DEFAULT NULL COMMENT 'process id',
