@@ -40,4 +40,9 @@ module.exports = {
     enable: true,
     path: path.join(__dirname, '../lib/plugin/egg-xprofiler-qywx'),
   },
+  
+  xfeishu: {
+    enable: true,
+    path: path.join(__dirname, '../lib/plugin/egg-xprofiler-feishu'),
+  },
 };
