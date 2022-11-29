@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "manager for xtransit",
   "main": "index.js",
-  "private": true,
   "egg": {
     "declarations": true
   },
@@ -45,6 +44,15 @@
     "ci": "npm run lint && npm run cov",
     "autod": "autod"
   },
+  "files": [
+    "app",
+    "config/config.default.js",
+    "config/plugin.js",
+    "db",
+    "lib",
+    "app.js",
+    "index.js"
+  ],
   "ci": {
     "version": "10"
   },
