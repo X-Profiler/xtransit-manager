@@ -14,8 +14,6 @@ module.exports = appInfo => {
 
   config.keys = appInfo.name + '_1589386223046_7287';
 
-  config.middleware = [];
-
   config.security = {
     csrf: {
       ignore: [

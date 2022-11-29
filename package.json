@@ -1,7 +1,8 @@
 {
-  "name": "xtransit-manager",
+  "name": "@xprofiler/manager",
   "version": "1.0.0",
   "description": "manager for xtransit",
+  "main": "index.js",
   "private": true,
   "egg": {
     "declarations": true

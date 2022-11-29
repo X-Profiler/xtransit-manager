@@ -5,7 +5,7 @@ class AppBootHook {
     this.app = app;
   }
 
-  async didReady() {
+  async checkResisQueue() {
     const { redis, config: { packageQueueKey } } = this.app;
     const { service: { redis: rdis, alarm } } = this.app.createAnonymousContext();
 
@@ -41,6 +41,10 @@ class AppBootHook {
         await new Promise(resolve => setTimeout(resolve, 10 * 1000));
       }
     }
+  }
+
+  async didReady() {
+    setTimeout(() => this.checkResisQueue(), 1000);
   }
 }
 
