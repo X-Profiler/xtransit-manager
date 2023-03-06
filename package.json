@@ -1,6 +1,6 @@
 {
   "name": "@xprofiler/manager",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "manager for xtransit",
   "main": "index.js",
   "egg": {
