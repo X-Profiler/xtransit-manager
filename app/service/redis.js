@@ -114,7 +114,7 @@ class RedisService extends Service {
         }
       }
     } catch (err) {
-      ctx.logger.error(`[redis] [handleOldClients] falied: ${err}`);
+      ctx.logger.error(`[redis] [handleOldClients] failed: ${err}`);
     }
   }
 
@@ -146,7 +146,7 @@ class RedisService extends Service {
     try {
       value = JSON.parse(value);
     } catch (err) {
-      ctx.logger.error(`[redis] [removeClient] falied: ${err}`);
+      ctx.logger.error(`[redis] [removeClient] failed: ${err}`);
       return;
     }
     if (value.clientId === clientId) {
@@ -168,7 +168,7 @@ class RedisService extends Service {
       const response = await xtransit.checkClientAlive(server, { clients: [client] });
       value = response[0] ? Object.assign({ appId, agentId }, value) : {};
     } catch (err) {
-      ctx.logger.warn(`[redis] [getClient] falied: ${err}`);
+      ctx.logger.warn(`[redis] [getClient] failed: ${err}`);
     }
     return value || {};
   }
@@ -300,7 +300,7 @@ class RedisService extends Service {
         lock: JSON.parse(lock || emptyTpl),
       };
     } catch (err) {
-      ctx.logger.error(`getModules falied: ${err}`);
+      ctx.logger.error(`getModules failed: ${err}`);
       return {};
     }
   }
