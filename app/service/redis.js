@@ -31,9 +31,9 @@ class RedisService extends Service {
     return key;
   }
 
-  composePackageKey(appId, packagePath) {
+  composePackageKey(appId, packagePath, agentId) {
     const { ctx: { app: { config: { packagePrefix } } } } = this;
-    const key = `${packagePrefix}${appId}::${packagePath}`;
+    const key = agentId ? `${packagePrefix}${appId}::${agentId}::${packagePath}` : `${packagePrefix}${appId}::${packagePath}`;
     return key;
   }
 
@@ -84,7 +84,7 @@ class RedisService extends Service {
           const field = this.composeLogsField(filePath);
           await redis.hdel(key, field);
           const fileKey = type === 'package'
-            ? this.composePackageKey(appId, filePath)
+            ? this.composePackageKey(appId, filePath, agentId)
             : this.composeErrorLogKey(appId, agentId, filePath);
           await redis.del(fileKey);
           length--;
@@ -235,12 +235,13 @@ class RedisService extends Service {
     await redis.expireat(key, timestamp);
   }
 
-  async savePackage(appId, agentId, packagePath, pkg, lock) {
-    const { ctx: { app: { redis, config: { packageStorage, packageQueueKey } } } } = this;
+  async savePackage(appId, agentId, packagePath, pkg, lock, lockType, lockImporter) {
+    const { ctx: { app: { redis, config: { packageStorage, packageQueueKey, packageAuditPrefix } } } } = this;
 
     // save package
-    const key = this.composePackageKey(appId, packagePath);
-    await redis.setex(key, packageStorage * 24 * 60 * 60, JSON.stringify({ pkg, lock }));
+    const key = this.composePackageKey(appId, packagePath, agentId);
+    await redis.setex(key, packageStorage * 24 * 60 * 60, JSON.stringify({ pkg, lock, lockType, lockImporter }));
+    await redis.del(`${packageAuditPrefix}${appId}::${agentId}::${packagePath}`);
     await redis.rpush(packageQueueKey, JSON.stringify({ appId, agentId, packagePath, timestamp: Date.now() }));
   }
 
@@ -289,15 +290,19 @@ class RedisService extends Service {
     return { count, errors };
   }
 
-  async getModules(appId, packagePath) {
+  async getModules(appId, packagePath, agentId) {
     const { ctx, ctx: { app: { redis } } } = this;
     const emptyTpl = JSON.stringify({ dependencies: {}, devDependencies: {} });
     try {
-      const key = this.composePackageKey(appId, packagePath);
-      const { pkg, lock } = JSON.parse(await redis.get(key));
+      const key = this.composePackageKey(appId, packagePath, agentId);
+      const legacyKey = this.composePackageKey(appId, packagePath);
+      const saved = JSON.parse(await redis.get(key) || await redis.get(legacyKey));
+      const { pkg, lock, lockType, lockImporter } = saved;
       return {
-        pkg: JSON.parse(pkg || emptyTpl),
-        lock: JSON.parse(lock || emptyTpl),
+        pkg: typeof pkg === 'string' ? JSON.parse(pkg || emptyTpl) : (pkg || JSON.parse(emptyTpl)),
+        lock: typeof lock === 'string' && lockType !== 'pnpm' ? JSON.parse(lock || emptyTpl) : lock,
+        lockType,
+        lockImporter,
       };
     } catch (err) {
       ctx.logger.error(`getModules failed: ${err}`);
@@ -326,12 +331,12 @@ class RedisService extends Service {
     }
 
     // 2. get audit
-    const { pkg, lock } = await this.getModules(appId, packagePath);
+    const { pkg, lock, lockType, lockImporter } = await this.getModules(appId, packagePath, agentId);
     if (!pkg || !lock) {
       return result;
     }
 
-    const auditDetail = await audit.getAudit(pkg, lock);
+    const auditDetail = await audit.getAudit(pkg, lock, lockType, lockImporter);
     if (!auditDetail) {
       return result;
     }
@@ -340,7 +345,7 @@ class RedisService extends Service {
       ...auditDetail.metadata,
       scanTime: moment().format('YYYY-MM-DD HH:mm:ss'),
     };
-    result.riskModules = audit.getRiskModules(auditDetail);
+    result.riskModules = lockType === 'pnpm' ? auditDetail.riskModules : audit.getRiskModules(auditDetail);
 
     await redis.setex(auditKey, packageAuditStorage, JSON.stringify({
       risk: result.risk,

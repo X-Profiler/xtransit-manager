@@ -59,18 +59,29 @@ class XprofilerController extends Controller {
     }
 
     // get modules
-    const { pkg, lock } = await redis.getModules(appId, moduleFile);
-    const { dependencies = {}, devDependencies = {} } = pkg;
+    const { pkg, lock, lockType, lockImporter } = await redis.getModules(appId, moduleFile, agentId);
+    const { dependencies = {}, devDependencies = {}, optionalDependencies = {} } = pkg;
     const lockModule = {};
-    for (const mod of Object.keys(dependencies).concat(Object.keys(devDependencies))) {
-      const info = lock.dependencies[mod] || {};
-      lockModule[mod] = {
-        version: info.version,
-        resolved: info.resolved,
-      };
+    if (lockType === 'pnpm') {
+      const graph = require('../service/pnpm-audit').parsePnpmLock(lock, lockImporter || '.');
+      const document = graph.lock;
+      for (const root of graph.roots) {
+        const node = graph.nodes.find(item => item.topLevel === root.name && item.path === root.name);
+        const packageKey = node && `${node.name}@${node.version}`;
+        const resolution = packageKey && document.packages && document.packages[packageKey] && document.packages[packageKey].resolution;
+        lockModule[root.name] = node ? { version: node.version, resolved: resolution && resolution.tarball } : {};
+      }
+    } else {
+      for (const mod of Object.keys(dependencies).concat(Object.keys(devDependencies), Object.keys(optionalDependencies))) {
+        const info = lock.dependencies[mod] || {};
+        lockModule[mod] = {
+          version: info.version,
+          resolved: info.resolved,
+        };
+      }
     }
 
-    ctx.body = { ok: true, data: { dependencies, devDependencies, lockModule, file: moduleFile } };
+    ctx.body = { ok: true, data: { dependencies, devDependencies, optionalDependencies, lockModule, file: moduleFile } };
   }
 
   async getAgentOsInfo() {

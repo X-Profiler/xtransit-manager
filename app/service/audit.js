@@ -1,10 +1,38 @@
 'use strict';
 
 const regFetch = require('npm-registry-fetch');
+const pnpm = require('./pnpm-audit');
 const Service = require('egg').Service;
 
 class AuditService extends Service {
-  async getAudit(pkg, lock) {
+  constructor(ctx) {
+    super(ctx);
+    this.registryFetch = regFetch;
+  }
+
+  async getPnpmAudit(lock, lockImporter) {
+    const { ctx: { app: { config: { npmRegistry } } } } = this;
+    try {
+      const graph = pnpm.parsePnpmLock(lock, lockImporter || '.');
+      const names = {};
+      for (const node of graph.nodes) {
+        if (!names[node.name]) names[node.name] = [];
+        if (!names[node.name].includes(node.version)) names[node.name].push(node.version);
+      }
+      const opts = {
+        method: 'POST',
+        gzip: true,
+        body: names,
+      };
+      const response = await (await this.registryFetch(`${npmRegistry}/-/npm/v1/security/advisories/bulk`, opts)).json();
+      return pnpm.auditPnpm(graph, response);
+    } catch (err) {
+      this.ctx.logger.error(`getPnpmAudit failed: ${err.code || 'error'}`);
+    }
+  }
+
+  async getAudit(pkg, lock, lockType, lockImporter) {
+    if (lockType === 'pnpm') return this.getPnpmAudit(lock, lockImporter);
     const { ctx, ctx: { app: { config: { npmRegistry } } } } = this;
     try {
       const { dependencies, devDependencies } = pkg;
@@ -18,7 +46,7 @@ class AuditService extends Service {
         gzip: true,
         body: auditData,
       };
-      const response = await (await regFetch(`${npmRegistry}/-/npm/v1/security/audits`, opts)).json();
+      const response = await (await this.registryFetch(`${npmRegistry}/-/npm/v1/security/audits`, opts)).json();
       return response;
     } catch (err) {
       ctx.logger.error(`getAudit failed: ${err}`);

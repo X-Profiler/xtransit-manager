@@ -13,10 +13,10 @@ class PackageService extends Service {
     }
 
     // save pkgs
-    for (const { name, pkg, lock } of pkgs) {
+    for (const { name, pkg, lock, lockType, lockImporter } of pkgs) {
       const tasks = [];
       tasks.push(redis.updateLogs(appId, agentId, name, 'package'));
-      tasks.push(redis.savePackage(appId, agentId, name, pkg, lock));
+      tasks.push(redis.savePackage(appId, agentId, name, pkg, lock, lockType, lockImporter));
       await Promise.all(tasks);
     }
   }

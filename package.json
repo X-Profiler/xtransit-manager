@@ -15,10 +15,12 @@
     "egg-remote-config": "^1.0.1",
     "egg-scripts": "^2.11.0",
     "egg-view-ejs": "^2.0.1",
+    "js-yaml": "^3.14.1",
     "moment": "^2.25.3",
     "nodemailer": "^6.4.8",
     "npm-registry-fetch": "^8.1.0",
-    "p-map": "^4.0.0"
+    "p-map": "^4.0.0",
+    "semver": "^6.3.1"
   },
   "devDependencies": {
     "autod": "^3.0.1",
@@ -39,9 +41,10 @@
     "debug": "egg-bin debug",
     "test": "npm run lint -- --fix && npm run test-local",
     "test-local": "egg-bin test",
+    "test:pnpm": "node test/pnpm-audit.core.check.js",
     "cov": "egg-bin cov",
     "lint": "eslint app config lib test --fix",
-    "ci": "npm run lint && npm run cov",
+    "ci": "npm run lint && npm run test:pnpm && npm run cov",
     "autod": "autod"
   },
   "files": [

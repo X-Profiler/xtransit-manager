@@ -1,0 +1,34 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      wrapper:
+        specifier: file:./packages/wrapper
+        version: file:packages/wrapper
+    devDependencies:
+      alias-lodash:
+        specifier: npm:lodash@4.17.20
+        version: lodash@4.17.20
+
+packages:
+
+  lodash@4.17.20:
+    resolution: {integrity: sha512-PlhdFcillOINfeV7Ni6oF1TAEayyZBoZ8bcshTHqOYJYlrqzRK5hagpagky5o4HfCzzd1TRkXPMFq6cKk9rGmA==}
+
+  wrapper@file:packages/wrapper:
+    resolution: {directory: packages/wrapper, type: directory}
+    name: wrapper
+
+snapshots:
+
+  lodash@4.17.20: {}
+
+  wrapper@file:packages/wrapper:
+    dependencies:
+      lodash: 4.17.20
